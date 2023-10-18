@@ -1,5 +1,5 @@
 class GlobalData:
-    def __init__(self, globalDataDict: dict) -> None:
+    def __init__(self, globalDataDict: dict):
         self.simulationTime = globalDataDict["SimulationTime"]
         self.simulationStepTime = globalDataDict["SimulationStepTime"]
         self.conductivity = globalDataDict["Conductivity"]
@@ -11,7 +11,7 @@ class GlobalData:
         self.nodesNumber = globalDataDict["Nodesnumber"]
         self.elementsNumber = globalDataDict["Elementsnumber"]
 
-    def print(self):
+    def print(self) -> None:
         print(f"Simulation time: \t{self.simulationTime}")
         print(f"Simulation step time: \t{self.simulationStepTime}")
         print(f"Conductivity: \t{self.conductivity}")
@@ -24,7 +24,7 @@ class GlobalData:
         print(f"Elements number: \t{self.elementsNumber}")
 
 class Node:
-    def __init__(self, id: int, x: float, y: float) -> None:
+    def __init__(self, id: int, x: float, y: float):
         self.id = id
         self.x = x
         self.y = y
@@ -33,7 +33,7 @@ class Node:
         print(f"Node {self.id}: \t({self.x}, {self.y})")
 
 class Element:
-    def __init__(self, id: int, IDs: list[int]) -> None:
+    def __init__(self, id: int, IDs: list[int]):
         self.id = id
         self.IDs = IDs
 
@@ -41,7 +41,7 @@ class Element:
         print(f"Element {self.id}: \t{self.IDs}")
 
 class Grid:
-    def __init__(self, inputFile: str) -> None:
+    def __init__(self, inputFile: str):
         f = open(inputFile, "r")
         fileContent = f.readlines()
         self.globalDataObj = self.ReadGlobalData(fileContent)
@@ -84,7 +84,7 @@ class Grid:
             tempList = []
         return elementList
     
-    def print(self):
+    def print(self) -> None:
         print(self.globalDataObj.print())
         print("\nNodes:")
         for node in self.nodes:
