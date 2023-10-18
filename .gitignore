@@ -1,2 +1,2 @@
-*.pdf
-*.pyc
+Data/MaterialsFromClasses/
+__pycache__/
