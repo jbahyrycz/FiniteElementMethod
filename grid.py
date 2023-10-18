@@ -11,7 +11,7 @@ class GlobalData:
         self.nodesNumber = globalDataDict["Nodesnumber"]
         self.elementsNumber = globalDataDict["Elementsnumber"]
 
-    def printGlobalData(self):
+    def print(self):
         print(f"Simulation time: \t{self.simulationTime}")
         print(f"Simulation step time: \t{self.simulationStepTime}")
         print(f"Conductivity: \t{self.conductivity}")
@@ -29,7 +29,7 @@ class Node:
         self.x = x
         self.y = y
 
-    def printNode(self) -> None:
+    def print(self) -> None:
         print(f"Node {self.id}: \t({self.x}, {self.y})")
 
 class Element:
@@ -37,7 +37,7 @@ class Element:
         self.id = id
         self.IDs = IDs
 
-    def printElement(self) -> None:
+    def print(self) -> None:
         print(f"Element {self.id}: \t{self.IDs}")
 
 class Grid:
@@ -84,11 +84,11 @@ class Grid:
             tempList = []
         return elementList
     
-    def printGrid(self):
-        print(self.globalDataObj.printGlobalData())
+    def print(self):
+        print(self.globalDataObj.print())
         print("\nNodes:")
         for node in self.nodes:
-            node.printNode()
+            node.print()
         print("\nElements:")
         for element in self.elements:
-            element.printElement()
+            element.print()
