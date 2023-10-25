@@ -43,14 +43,16 @@ def lab2():
     print(f2n4.calculate2d())
 
 def lab3():
-    #element = UniversalElement()
-    #print2dTab(element.dNKsi)
-    #print2dTab(element.dNEta)
+    el2n = UniversalElement(2)
+    print("dN/dKsi:")
+    print2dTab(el2n.dNdKsi)
+    print("dN/dEta:")
+    print2dTab(el2n.dNdEta)
     element2 = UniversalElement(3)
-    print("Ksi:")
-    print2dTab(element2.dNKsi)
-    print("Eta:")
-    print2dTab(element2.dNEta)
+    print("dN/dKsi:")
+    print2dTab(element2.dNdKsi)
+    print("dN/dEta:")
+    print2dTab(element2.dNdEta)
 
 if __name__ == "__main__":
     main()

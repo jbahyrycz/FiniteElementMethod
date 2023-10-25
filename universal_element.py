@@ -5,15 +5,15 @@ from common import *
 class UniversalElement():
     def __init__(self, n: int=2):
         self.n = n
-        self.dNKsi= []
-        self.dNEta= []
-        self.dNKsiFun = [
+        self.dNdKsi= []
+        self.dNdEta= []
+        self.dNdKsiFun = [
             self.dN1Ksi,
             self.dN2Ksi,
             self.dN3Ksi,
             self.dN4Ksi
         ]
-        self.dNEtaFun = [
+        self.dNdEtaFun = [
             self.dN1Eta,
             self.dN2Eta,
             self.dN3Eta,
@@ -77,96 +77,42 @@ class UniversalElement():
             case _:
                 raise MyException("Number of nodes in numerical integration (n) must be a number in range (1;5)")
             
-        self.fillNKsiTab()
-        self.fillNEtaTab()
+        self.filldNdKsiTab()
+        self.filldNdEtaTab()
 
-    def fillNKsiTab(self):
+    def initializeTabs(self):
+        pass           
+
+    def filldNdKsiTab(self) -> None:
         for j in range(self.n*self.n):
-            self.dNKsi.append([])
+            self.dNdKsi.append([])
             for i in range (0, 4):
-                self.dNKsi[j].append(0)
+                self.dNdKsi[j].append(0)
+
+        k=0
+        cond = self.n-1
+        for j in range(self.n*self.n):
+            for i in range (0, 4):
+                self.dNdKsi[j][i] = self.dNdKsiFun[i](self.points[k])
+            if j < cond:
+                k+=1
+            else:
+                k=0
+                cond+=self.n
+
+    def filldNdEtaTab(self):
+        for j in range(self.n*self.n):
+            self.dNdEta.append([])
+            for i in range (0, 4):
+                self.dNdEta[j].append(0)
         
         k=0
         cond = self.n-1
         for j in range(self.n*self.n):
             for i in range (0, 4):
-                self.dNKsi[j][i] = self.dNKsiFun[i](self.points[k])
+                self.dNdEta[j][i] = self.dNdEtaFun[i](self.points[k])
             if j == cond:
                 k+=1
-                cond+=self.n
-
-        '''
-        self.dNKsi[0][0] = self.dNKsiFun[0](self.points[0])
-        self.dNKsi[0][1] = self.dNKsiFun[1](self.points[0])
-        self.dNKsi[0][2] = self.dNKsiFun[2](self.points[0])
-        self.dNKsi[0][3] = self.dNKsiFun[3](self.points[0])
-        self.dNKsi[1][0] = self.dNKsiFun[0](self.points[0])
-        self.dNKsi[1][1] = self.dNKsiFun[1](self.points[0])
-        self.dNKsi[1][2] = self.dNKsiFun[2](self.points[0])
-        self.dNKsi[1][3] = self.dNKsiFun[3](self.points[0])
-        self.dNKsi[2][0] = self.dNKsiFun[0](self.points[1])
-        self.dNKsi[2][1] = self.dNKsiFun[1](self.points[1])
-        self.dNKsi[2][2] = self.dNKsiFun[2](self.points[1])
-        self.dNKsi[2][3] = self.dNKsiFun[3](self.points[1])
-        self.dNKsi[3][0] = self.dNKsiFun[0](self.points[1])
-        self.dNKsi[3][1] = self.dNKsiFun[1](self.points[1])
-        self.dNKsi[3][2] = self.dNKsiFun[2](self.points[1])
-        self.dNKsi[3][3] = self.dNKsiFun[3](self.points[1])
-        '''
-        '''
-        self.dNKsi[0][0] = self.dNKsiFun[0](self.points[0])
-        self.dNKsi[0][1] = self.dNKsiFun[1](self.points[0])
-        self.dNKsi[0][2] = self.dNKsiFun[2](self.points[0])
-        self.dNKsi[0][3] = self.dNKsiFun[3](self.points[0])
-        self.dNKsi[1][0] = self.dNKsiFun[0](self.points[0])
-        self.dNKsi[1][1] = self.dNKsiFun[1](self.points[0])
-        self.dNKsi[1][2] = self.dNKsiFun[2](self.points[0])
-        self.dNKsi[1][3] = self.dNKsiFun[3](self.points[0])
-        self.dNKsi[2][0] = self.dNKsiFun[0](self.points[0])
-        self.dNKsi[2][1] = self.dNKsiFun[1](self.points[0])
-        self.dNKsi[2][2] = self.dNKsiFun[2](self.points[0])
-        self.dNKsi[2][3] = self.dNKsiFun[3](self.points[0])
-        self.dNKsi[3][0] = self.dNKsiFun[0](self.points[1])
-        self.dNKsi[3][1] = self.dNKsiFun[1](self.points[1])
-        self.dNKsi[3][2] = self.dNKsiFun[2](self.points[1])
-        self.dNKsi[3][3] = self.dNKsiFun[3](self.points[1])
-        self.dNKsi[4][0] = self.dNKsiFun[0](self.points[1])
-        self.dNKsi[4][1] = self.dNKsiFun[1](self.points[1])
-        self.dNKsi[4][2] = self.dNKsiFun[2](self.points[1])
-        self.dNKsi[4][3] = self.dNKsiFun[3](self.points[1])
-        self.dNKsi[5][0] = self.dNKsiFun[0](self.points[1])
-        self.dNKsi[5][1] = self.dNKsiFun[1](self.points[1])
-        self.dNKsi[5][2] = self.dNKsiFun[2](self.points[1])
-        self.dNKsi[5][3] = self.dNKsiFun[3](self.points[1])
-        self.dNKsi[6][0] = self.dNKsiFun[0](self.points[2])
-        self.dNKsi[6][1] = self.dNKsiFun[1](self.points[2])
-        self.dNKsi[6][2] = self.dNKsiFun[2](self.points[2])
-        self.dNKsi[6][3] = self.dNKsiFun[3](self.points[2])
-        self.dNKsi[7][0] = self.dNKsiFun[0](self.points[2])
-        self.dNKsi[7][1] = self.dNKsiFun[1](self.points[2])
-        self.dNKsi[7][2] = self.dNKsiFun[2](self.points[2])
-        self.dNKsi[7][3] = self.dNKsiFun[3](self.points[2])
-        self.dNKsi[8][0] = self.dNKsiFun[0](self.points[2])
-        self.dNKsi[8][1] = self.dNKsiFun[1](self.points[2])
-        self.dNKsi[8][2] = self.dNKsiFun[2](self.points[2])
-        self.dNKsi[8][3] = self.dNKsiFun[3](self.points[2])
-        '''
-
-    def fillNEtaTab(self) -> None:
-        for j in range(self.n*self.n):
-            self.dNEta.append([])
-            for i in range (0, 4):
-                self.dNEta[j].append(0)
-
-        k=0
-        cond = self.n-1
-        for j in range(self.n*self.n):
-            for i in range (0, 4):
-                self.dNEta[j][i] = self.dNEtaFun[i](self.points[k])
-            if j < cond:
-                k+=1
-            else:
-                k=0
                 cond+=self.n
 
     def N1(self, ksi: float, eta: float) -> float:
