@@ -1,6 +1,7 @@
 import os
 from grid import *
 from numerical_integration import *
+from universal_element import *
 
 scriptPath = os.getcwd()
 gridsPath = os.path.join(scriptPath, "Data", "Grids")
@@ -15,7 +16,8 @@ def fun2(x: float, y: float) -> float:
 def main():
     try:
         #lab1()
-        lab2()
+        #lab2()
+        lab3()
     except MyException as e:
         print(e)
 
@@ -39,6 +41,16 @@ def lab2():
     print(f2n3.calculate2d())
     f2n4 = GaussMethod(fun2, 4)
     print(f2n4.calculate2d())
+
+def lab3():
+    #element = UniversalElement()
+    #print2dTab(element.dNKsi)
+    #print2dTab(element.dNEta)
+    element2 = UniversalElement(3)
+    print("Ksi:")
+    print2dTab(element2.dNKsi)
+    print("Eta:")
+    print2dTab(element2.dNEta)
 
 if __name__ == "__main__":
     main()
