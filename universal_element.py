@@ -76,43 +76,39 @@ class UniversalElement():
                 ]
             case _:
                 raise MyException("Number of nodes in numerical integration (n) must be a number in range (1;5)")
-            
+        
+        self.initializeTabs()
         self.filldNdKsiTab()
         self.filldNdEtaTab()
 
     def initializeTabs(self):
-        pass           
-
-    def filldNdKsiTab(self) -> None:
         for j in range(self.n*self.n):
             self.dNdKsi.append([])
+            self.dNdEta.append([])
             for i in range (0, 4):
                 self.dNdKsi[j].append(0)
+                self.dNdEta[j].append(0)
 
+    def filldNdKsiTab(self):
         k=0
         cond = self.n-1
         for j in range(self.n*self.n):
             for i in range (0, 4):
                 self.dNdKsi[j][i] = self.dNdKsiFun[i](self.points[k])
-            if j < cond:
+            if j == cond:
                 k+=1
-            else:
-                k=0
                 cond+=self.n
 
-    def filldNdEtaTab(self):
-        for j in range(self.n*self.n):
-            self.dNdEta.append([])
-            for i in range (0, 4):
-                self.dNdEta[j].append(0)
-        
+    def filldNdEtaTab(self) -> None:
         k=0
         cond = self.n-1
         for j in range(self.n*self.n):
             for i in range (0, 4):
                 self.dNdEta[j][i] = self.dNdEtaFun[i](self.points[k])
-            if j == cond:
+            if j < cond:
                 k+=1
+            else:
+                k=0
                 cond+=self.n
 
     def N1(self, ksi: float, eta: float) -> float:

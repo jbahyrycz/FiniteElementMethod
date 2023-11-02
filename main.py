@@ -53,6 +53,11 @@ def lab3():
     print2dTab(element2.dNdKsi)
     print("dN/dEta:")
     print2dTab(element2.dNdEta)
+    element3 = UniversalElement(4)
+    print("dN/dKsi:")
+    print2dTab(element3.dNdKsi)
+    print("dN/dEta:")
+    print2dTab(element3.dNdEta)
 
 if __name__ == "__main__":
     main()
