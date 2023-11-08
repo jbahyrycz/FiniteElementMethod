@@ -59,22 +59,21 @@ class Element:
         self.IDs = IDs
         self.HMatrix = None
 
-    def calculateHMatrix(self, nodes: list[Node], uEl: UniversalElement):
+    def calculateHMatrix(self, nodes: list[Node], uEl: UniversalElement) -> None:
         '''
         Calculates H matrix for the element.
         '''
         xCoords, yCoords = self.fillXYCoords(nodes)
-        print(f"xCoords: {xCoords}\nyCoords: {yCoords}")
         dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab = self.fillXYKsiEtaTabs(xCoords, yCoords, uEl)
-        print(f"dXdKsiTab: {dXdKsiTab}\ndXdEtaTab: {dXdEtaTab}\ndYdKsiTab: {dYdKsiTab}\ndYdEtaTab: {dYdEtaTab}")
-        dNdXTab, dNdYTab = self.filldNdXdNdYTabs(dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab, uEl)
-        print("dNdXTab:")
-        print2dTab(dNdXTab)
-        print("dNdYTab:")
-        print2dTab(dNdYTab)
-        self.calculateHMatrixForIntegrationPoints()      
+        dNdXTab, dNdYTab, detTab = self.fillDNdXdNdYTabs(dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab, uEl)
+        ipHMatrices = self.calculateHMatrixForIntegrationPoints(dNdXTab, dNdYTab, detTab, uEl.n)
+        
+        self.HMatrix = np.zeros((4, 4))
+        for i in range(0, uEl.n*uEl.n):
+            #print(ipHMatrices[i])
+            self.HMatrix += ipHMatrices[i]*(uEl.weights[i//uEl.n])*(uEl.weights[i%uEl.n])
 
-    def fillXYCoords(self, nodes: list[Node]):
+    def fillXYCoords(self, nodes: list[Node]) -> tuple[float]:
         '''
         Fills lists storing x and y coords of nodes belonging to the element.
         '''
@@ -82,11 +81,12 @@ class Element:
         for i in range(0, 4):
             xCoords.append(nodes[i].x)
             yCoords.append(nodes[i].y)
+        #print(f"xCoords: {xCoords}\nyCoords: {yCoords}")
         return xCoords, yCoords
     
-    def fillXYKsiEtaTabs(self, xCoords: list[float], yCoords: list[float], uEl: UniversalElement):
+    def fillXYKsiEtaTabs(self, xCoords: list[float], yCoords: list[float], uEl: UniversalElement) -> tuple[list[float]]:
         '''
-        Calculates dx/dksi, dx/deta, dy/dksi, dy/deta for every integration point and saves the output in tables.
+        Calculates dx/dksi, dx/deta, dy/dksi, dy/deta for every integration point and returns 4 tables with output.
         '''
         dXdKsiTab = []; dXdEtaTab = []; dYdKsiTab = []; dYdEtaTab = []
         for i in range(0, uEl.n*uEl.n):
@@ -94,35 +94,35 @@ class Element:
             dXdEtaTab.append(self.dEta(uEl.dNdEtaTab[i][0], uEl.dNdEtaTab[i][1], uEl.dNdEtaTab[i][2], uEl.dNdEtaTab[i][3], xCoords))
             dYdKsiTab.append(self.dKsi(uEl.dNdKsiTab[i][0], uEl.dNdKsiTab[i][1], uEl.dNdKsiTab[i][2], uEl.dNdKsiTab[i][3], yCoords))
             dYdEtaTab.append(self.dKsi(uEl.dNdEtaTab[i][0], uEl.dNdEtaTab[i][1], uEl.dNdEtaTab[i][2], uEl.dNdEtaTab[i][3], yCoords))
+        #print(f"dXdKsiTab: {dXdKsiTab}\ndXdEtaTab: {dXdEtaTab}\ndYdKsiTab: {dYdKsiTab}\ndYdEtaTab: {dYdEtaTab}")
         return dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab
     
-    def filldNdXdNdYTabs(self, dXdKsiTab: list, dXdEtaTab: list, dYdKsiTab: list, dYdEtaTab: list, uEl: UniversalElement):
+    def fillDNdXdNdYTabs(self, dXdKsiTab: list, dXdEtaTab: list, dYdKsiTab: list, dYdEtaTab: list, uEl: UniversalElement) -> tuple[list]:
         '''
-        Fills dN/dx and dN/dy tables.
+        Fills dN/dx and dN/dy tables and calculates det[J].
         '''
-        dNdXTab, dNdYTab = self.initializeTabs(uEl.n)
+        dNdXTab, dNdYTab = self.initializeDNdXdNdYTabs(uEl.n)
+        detTab = []
         for j in range(uEl.n*uEl.n):
-            mx1 = np.array([[dXdKsiTab[j], dYdKsiTab[j]],
+            mxJ = np.array([[dXdKsiTab[j], dYdKsiTab[j]],
                              [dXdEtaTab[j], dYdEtaTab[j]]])
-            mx1Det = np.linalg.det(mx1)
-            #print(f"mx1*(1/det): {mx1*(1/mx1Det)}")
+            detJ = np.linalg.det(mxJ)
+            detTab.append(detJ)
             for i in range (0, 4):
                 mx2 = np.array([[uEl.dNdKsiTab[j][i]],[uEl.dNdEtaTab[j][i]]])
-                #print(f"mx2: {mx2}")
-                mxOutput = np.matmul(((1/mx1Det)*mx1), mx2)
-                #print(f"mxOutput: {mxOutput}")
-                #print(f"mxOutput[0] = {mxOutput[0]}")
-                #print(f"mxOutput[1] = {mxOutput[1]}")
+                mxOutput = np.matmul(((1/detJ)*mxJ), mx2)
                 dNdXTab[j][i] = mxOutput[0][0]
                 dNdYTab[j][i] = mxOutput[1][0]
-                #self.dNdKsiTab[j][i] = self.dNdKsiFunTab[i](self.points[j//self.n])
-                #self.dNdEtaTab[j][i] = self.dNdEtaFunTab[i](self.points[j%self.n])
-        return dNdXTab, dNdYTab
-
-    def calculateHMatrixForIntegrationPoints():
-        pass
-
-    def initializeTabs(self, n: int):
+        #print("dNdXTab:")
+        #print2dTab(dNdXTab)
+        #print("dNdYTab:")
+        #print2dTab(dNdYTab)
+        return dNdXTab, dNdYTab, detTab
+    
+    def initializeDNdXdNdYTabs(self, n: int) -> tuple[list[list]]:
+        '''
+        Initializes empty tables for dN/dx and dN/dy calculations.
+        '''
         dNdXTab = []; dNdYTab = []
         for j in range(n*n):
             dNdXTab.append([])
@@ -132,11 +132,33 @@ class Element:
                 dNdYTab[j].append(0)
         return dNdXTab, dNdYTab
 
+    def calculateHMatrixForIntegrationPoints(self, dNdXTab: list, dNdYTab: list, detTab: list, n: int) -> list[np.ndarray]:
+        '''
+        Calculates H matrix for each integration point. Returns list of matrixes.
+        '''
+        mxHTab = []
+        for i in range(0, n*n):
+            mxDNdX = np.array([[dNdXTab[i][0]],
+                             [dNdXTab[i][1]],
+                             [dNdXTab[i][2]],
+                             [dNdXTab[i][3]]])
+            mxDNdY = np.array([[dNdYTab[i][0]],
+                             [dNdYTab[i][1]],
+                             [dNdYTab[i][2]],
+                             [dNdYTab[i][3]]])
+            ipMxH = 30*(np.matmul(mxDNdX, mxDNdX.transpose()) + np.matmul(mxDNdY, mxDNdY.transpose()))*detTab[0]
+            #print(f"IP {i+1}:\n{ipMxH}")
+            mxHTab.append(ipMxH)
+        return mxHTab
+
     def dKsi(self, dN1dKsi: float,
                      dN2dKsi: float,
                      dN3dKsi: float,
                      dN4dKsi: float,
                      var: float) -> float:
+        '''
+        Returns dx/dksi or dy/dksi depending on the argument given.
+        '''
         return dN1dKsi*var[0] + dN2dKsi*var[1] + dN3dKsi*var[2] + dN4dKsi*var[3]
 
     def dEta(self, dN1dEta: float,
@@ -144,6 +166,9 @@ class Element:
                      dN3dEta: float,
                      dN4dEta: float,
                      var: float) -> float:
+        '''
+        Returns dx/deta or dy/deta depending on the argument given.
+        '''
         return dN1dEta*var[0] + dN2dEta*var[1] + dN3dEta*var[2] + dN4dEta*var[3]
 
     def print(self) -> None:
@@ -173,6 +198,9 @@ class Grid:
             raise MyException("Not enough input data to create a grid")
 
     def ReadGlobalData(self, input: str) -> GlobalData:
+        '''
+        Reads global data from input file.
+        '''
         globalDataDict = {}
         for i in range (0, 8):
             line = input[i]
@@ -190,6 +218,9 @@ class Grid:
         return GlobalData(globalDataDict)
 
     def ReadNodes(self, input: str, nodesNumber: int) -> list[Node]:
+        '''
+        Reads nodes from input file.
+        '''
         nodeList = []
         for i in range (11, 11 + nodesNumber):
             line = input[i].split(", ")
@@ -197,6 +228,9 @@ class Grid:
         return nodeList
 
     def ReadElements(self, input: str, nodesNumber: int, elementsNumber: int) -> list[Element]:
+        '''
+        Reads elements data from input file.
+        '''
         elements = []
         nodeIDs = []
         for i in range (11 + nodesNumber + 1, 11 + nodesNumber + 1 + elementsNumber):
@@ -207,9 +241,9 @@ class Grid:
             nodeIDs = []
         return elements
     
-    def calculateHMatrices(self, n: int):
+    def calculateHMatrices(self, n: int) -> None:
         '''
-        Calculates H matrices for each element in the grid.
+        Calculates H matrices for each element in the grid, output is stored in Element.Hmatrix.
         '''
         uEl = UniversalElement(n)
         for element in self.elements:
@@ -218,15 +252,7 @@ class Grid:
                                       self.nodes[element.IDs[2] - 1],
                                       self.nodes[element.IDs[3] - 1]],
                                       uEl)
-
-    def calculateHMatrix(self):
-        pass
-
-    def calculateJacobian(self):
-        pass
-
-    def calculateDet(self):
-        pass
+            print(element.HMatrix)
     
     def print(self) -> None:
         self.globalData.print()

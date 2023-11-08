@@ -1,7 +1,10 @@
 from math import *
 from common import *
 
-class GaussMethod:
+class GaussianQuadrature:
+    '''
+    A class for numerical integration using Gaussian Quadrature.
+    '''
     def __init__(self, n: int, fun):
         self.fun = fun
         self.n = n
@@ -10,6 +13,9 @@ class GaussMethod:
         self.initPointsAndWeights()
 
     def initPointsAndWeights(self) -> None:
+        '''
+        Initializes lists containing integration points and their weights.
+        '''
         match self.n:
             case 1:
                 self.points = [0]
@@ -67,6 +73,9 @@ class GaussMethod:
                 raise MyException("Number of nodes in numerical integration (n) must be a number in range (1;5)")      
 
     def calculateIntegral1d(self) -> float:
+        '''
+        Calculates integral for function of 1 variable f(x).
+        '''
         result = 0
         for i in range (0, self.n):
             x = self.points[i]
@@ -74,6 +83,9 @@ class GaussMethod:
         return result
     
     def calculateIntegral2d(self) -> float:
+        '''
+        Calculates integral for function of 2 variables f(x, y).
+        '''
         result = 0
         for i in range (0, self.n):
             x = self.points[i]

@@ -1,8 +1,8 @@
-from numerical_integration import GaussMethod
+from numerical_integration import *
 from math import *
 from common import *
 
-class UniversalElement(GaussMethod):
+class UniversalElement(GaussianQuadrature):
     def __init__(self, n):
         super().__init__(n, None)
         self.dNdKsiTab = []
