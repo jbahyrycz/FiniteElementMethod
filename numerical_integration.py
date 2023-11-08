@@ -2,11 +2,14 @@ from math import *
 from common import *
 
 class GaussMethod:
-    def __init__(self, fun, n: int=5):
+    def __init__(self, n: int, fun):
         self.fun = fun
         self.n = n
         self.points = []
         self.weights = []
+        self.initPointsAndWeights()
+
+    def initPointsAndWeights(self) -> None:
         match self.n:
             case 1:
                 self.points = [0]
@@ -61,16 +64,16 @@ class GaussMethod:
                     (322 - 13*sqrt(70))/900
                 ]
             case _:
-                raise MyException("Number of nodes in numerical integration (n) must be a number in range (1;5)")
+                raise MyException("Number of nodes in numerical integration (n) must be a number in range (1;5)")      
 
-    def calculate1d(self) -> float:
+    def calculateIntegral1d(self) -> float:
         result = 0
         for i in range (0, self.n):
             x = self.points[i]
             result += self.weights[i] * self.fun(x)
         return result
     
-    def calculate2d(self) -> float:
+    def calculateIntegral2d(self) -> float:
         result = 0
         for i in range (0, self.n):
             x = self.points[i]
