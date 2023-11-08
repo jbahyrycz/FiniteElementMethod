@@ -17,7 +17,8 @@ def main():
     try:
         #lab1()
         #lab2()
-        lab3()
+        #lab3()
+        lab4()
     except MyException as e:
         print(e)
 
@@ -58,6 +59,31 @@ def lab3():
     #print2dTab(element3.dNdKsiTab)
     #print("dN/dEta:")
     #print2dTab(element3.dNdEta)
+
+def lab4():
+    # Test grid
+    globalDataDict = {}
+    globalDataDict["SimulationTime"] = 0
+    globalDataDict["SimulationStepTime"] = 0
+    globalDataDict["Conductivity"] = 0
+    globalDataDict["Alfa"] = 0
+    globalDataDict["Tot"] = 0
+    globalDataDict["InitialTemp"] = 0
+    globalDataDict["Density"] = 0
+    globalDataDict["SpecificHeat"] = 0
+    globalDataDict["Nodesnumber"] = 4
+    globalDataDict["Elementsnumber"] = 1
+    globalData = GlobalData(globalDataDict)
+    nodes = [Node(1, 0, 0), Node(2, 0.025, 0), Node(3, 0.025, 0.025), Node(4, 0, 0.025)]
+    elements = [Element(1, [1, 2, 3, 4])]
+    grid = Grid(globalData=globalData, nodes=nodes, elements=elements)
+    grid.print()
+
+    # Calculations for test grid and n = 2
+    n = 2
+    grid.calculateHMatrices(n)
+
+
 
 if __name__ == "__main__":
     main()
