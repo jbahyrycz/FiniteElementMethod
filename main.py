@@ -79,19 +79,17 @@ def lab4():
     elements = [Element(1, [1, 2, 3, 4])]
     grid = Grid(globalData=globalData, nodes=nodes, elements=elements)
     #grid.print()
-
-    # Calculations for test grid and n = 2
-    n = 4
-    grid.calculateHMatrices(n)
-    print(grid.elements[0].HMatrix)
+    grid.calculateHMatrices(2)
     '''
+
+    
     gridObj1 = Grid(os.path.join(gridsPath, "Test1_4_4.txt"))
-    #gridObj1.print()
-    #gridObj1.calculateHMatrices(3)
+    gridObj1.calculateHMatrices(3)
     gridObj2 = Grid(os.path.join(gridsPath, "Test2_4_4_MixGrid.txt"))
-    gridObj2.calculateHMatrices(3)
+    #gridObj2.calculateHMatrices(3)
     gridObj3 = Grid(os.path.join(gridsPath, "Test3_31_31_kwadrat.txt"))
     #gridObj3.calculateHMatrices(3)
+    
 
 
 

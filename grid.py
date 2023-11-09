@@ -97,9 +97,12 @@ class Element:
         #print(f"dXdKsiTab: {dXdKsiTab}\ndXdEtaTab: {dXdEtaTab}\ndYdKsiTab: {dYdKsiTab}\ndYdEtaTab: {dYdEtaTab}")
         return dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab
     
-    def fillDNdXdNdYTabs(self, dXdKsiTab: list, dXdEtaTab: list, dYdKsiTab: list, dYdEtaTab: list, uEl: UniversalElement) -> tuple[list]:
+    def fillDNdXdNdYTabs(self, dXdKsiTab: list, dXdEtaTab: list, dYdKsiTab: list, dYdEtaTab: list, uEl: UniversalElement) -> tuple[list[float]]:
         '''
-        Fills dN/dx and dN/dy tables and calculates det[J].
+        Fills dN/dx and dN/dy tables and calculates Jacobian and det[J].
+
+        mxJ: Jacobian matrix
+        detJ: Jacobian determinant
         '''
         dNdXTab, dNdYTab = self.initializeDNdXdNdYTabs(uEl.n)
         detTab = []
@@ -108,9 +111,12 @@ class Element:
                              [dXdEtaTab[j], dYdEtaTab[j]]])
             detJ = np.linalg.det(mxJ)
             detTab.append(detJ)
+            mx1 = np.array([[dYdEtaTab[j], -dXdEtaTab[j]],
+                             [-dYdKsiTab[j], dXdKsiTab[j]]])
             for i in range (0, 4):
                 mx2 = np.array([[uEl.dNdKsiTab[j][i]],[uEl.dNdEtaTab[j][i]]])
-                mxOutput = np.matmul(((1/detJ)*mxJ), mx2)
+                # (1/detJ)*mx1 = mxJ^(-1)
+                mxOutput = np.matmul(((1/detJ)*mx1), mx2)
                 dNdXTab[j][i] = mxOutput[0][0]
                 dNdYTab[j][i] = mxOutput[1][0]
         #print("dNdXTab:")
