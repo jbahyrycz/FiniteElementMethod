@@ -2,26 +2,15 @@ from numerical_integration import *
 from math import *
 from common import *
 
+
 class UniversalElement(GaussianQuadrature):
     def __init__(self, n):
         super().__init__(n, None)
         self.dNdKsiTab = []
         self.dNdEtaTab = []
-        self.dNdKsiFunTab = [
-            self.dN1Ksi,
-            self.dN2Ksi,
-            self.dN3Ksi,
-            self.dN4Ksi
-        ]
-        self.dNdEtaFunTab = [
-            self.dN1Eta,
-            self.dN2Eta,
-            self.dN3Eta,
-            self.dN4Eta
-        ]
-        self.initializeTabs()
+        surface = Surface(n)
         self.fillTabs()
-
+            
     def initializeTabs(self):
         for j in range(self.n*self.n):
             self.dNdKsiTab.append([])
@@ -31,43 +20,93 @@ class UniversalElement(GaussianQuadrature):
                 self.dNdEtaTab[j].append(0)
 
     def fillTabs(self):
+        '''
+        Calculates dN/dKsi and dN/dEta for N1, N2, N3, N4 and in integration points. Result is stored in tables.
+        '''
+        self.initializeTabs()
         for j in range(self.n*self.n):
+            ksi = self.points[j%self.n]
+            eta = self.points[j//self.n]
             for i in range (0, 4):
-                self.dNdKsiTab[j][i] = self.dNdKsiFunTab[i](self.points[j//self.n])
-                self.dNdEtaTab[j][i] = self.dNdEtaFunTab[i](self.points[j%self.n])
+                self.dNdKsiTab[j][i] = dNdKsiFunTab[i](eta)
+                self.dNdEtaTab[j][i] = dNdEtaFunTab[i](ksi)
 
-    def N1(self, ksi: float, eta: float) -> float:
-        return (1/4)*(1-ksi)*(1-eta)
-    
-    def N2(self, ksi: float, eta: float) -> float:
-        return (1/4)*(1+ksi)*(1-eta)
-    
-    def N3(self, ksi: float, eta: float) -> float:
-        return (1/4)*(1+ksi)*(1+eta)
-    
-    def N4(self, ksi: float, eta: float) -> float:
-        return (1/4)*(1-ksi)*(1+eta)
+class Surface():
+    def __init__(self, n: int):
+        self.n = n
+        self.N = []
+        self.fillN()
 
-    def dN1Ksi(self, eta: float) -> float:
-        return -(1/4)*(1-eta)
+    def fillN(self):
+        self.initializeN()
+        print2dTab(self.N)
+        '''
+        for j in range(self.n):
+            ksi = self.points[j%self.n]
+            eta = self.points[j//self.n]
+            for i in range (0, 4):
+                self.N[j][i] = NFunTab[i](ksi, eta)
+        '''
     
-    def dN2Ksi(self, eta: float) -> float:
-        return (1/4)*(1-eta)
+    def initializeN(self):
+        for j in range (0, self.n):
+            self.N.append([])
+            for i in range (0, 4):
+                self.N[j].append(0)
+
+def N1(ksi: float, eta: float) -> float:
+    return (1/4)*(1-ksi)*(1-eta)
+
+def N2(ksi: float, eta: float) -> float:
+    return (1/4)*(1+ksi)*(1-eta)
+
+def N3(ksi: float, eta: float) -> float:
+    return (1/4)*(1+ksi)*(1+eta)
+
+def N4(ksi: float, eta: float) -> float:
+    return (1/4)*(1-ksi)*(1+eta)
+
+def dN1Ksi(eta: float) -> float:
+    return -(1/4)*(1-eta)
+
+def dN2Ksi(eta: float) -> float:
+    return (1/4)*(1-eta)
+
+def dN3Ksi(eta: float) -> float:
+    return (1/4)*(1+eta)
+
+def dN4Ksi(eta: float) -> float:
+    return -(1/4)*(1+eta)
+
+def dN1Eta(ksi: float) -> float:
+    return -(1/4)*(1-ksi)
+
+def dN2Eta(ksi: float) -> float:
+    return -(1/4)*(1+ksi)
+
+def dN3Eta(ksi: float) -> float:
+    return (1/4)*(1+ksi)
+
+def dN4Eta(ksi: float) -> float:
+    return (1/4)*(1-ksi)
+
+dNdKsiFunTab = [
+    dN1Ksi,
+    dN2Ksi,
+    dN3Ksi,
+    dN4Ksi
+]
+
+dNdEtaFunTab = [
+    dN1Eta,
+    dN2Eta,
+    dN3Eta,
+    dN4Eta
+]
     
-    def dN3Ksi(self, eta: float) -> float:
-        return (1/4)*(1+eta)
-    
-    def dN4Ksi(self, eta: float) -> float:
-        return -(1/4)*(1+eta)
-    
-    def dN1Eta(self, ksi: float) -> float:
-        return -(1/4)*(1-ksi)
-    
-    def dN2Eta(self, ksi: float) -> float:
-        return -(1/4)*(1+ksi)
-    
-    def dN3Eta(self, ksi: float) -> float:
-        return (1/4)*(1+ksi)
-    
-    def dN4Eta(self, ksi: float) -> float:
-        return (1/4)*(1-ksi)
+NFunTab = [
+    N1,
+    N2,
+    N3,
+    N4,
+]

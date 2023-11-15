@@ -2,6 +2,7 @@ import os
 from grid import *
 from numerical_integration import *
 from universal_element import *
+from H_matrix_calculation import *
 
 scriptPath = os.getcwd()
 gridsPath = os.path.join(scriptPath, "Data", "Grids")
@@ -18,7 +19,8 @@ def main():
         #lab1()
         #lab2()
         #lab3()
-        lab4()
+        #lab4()
+        lab5()
     except MyException as e:
         print(e)
 
@@ -79,20 +81,22 @@ def lab4():
     elements = [Element(1, [1, 2, 3, 4])]
     grid = Grid(globalData=globalData, nodes=nodes, elements=elements)
     #grid.print()
-    grid.calculateHMatrices(2)
+    HMatrixCalculation.calculateHMatrices(2, grid)
     '''
 
     #gridObj1 = Grid(os.path.join(gridsPath, "Test1_4_4.txt"))
     #gridObj1.print()
-    #gridObj1.calculateHMatrices(2)
+    #HMatrixCalculation.calculateHMatrices(2, gridObj1)
     gridObj2 = Grid(os.path.join(gridsPath, "Test2_4_4_MixGrid.txt"))
     gridObj2.print()
-    gridObj2.calculateHMatrices(2)
+    HMatrixCalculation.calculateHMatrices(2, gridObj2)
     #gridObj3 = Grid(os.path.join(gridsPath, "Test3_31_31_kwadrat.txt"))
-    #gridObj3.calculateHMatrices(3)
+    #HMatrixCalculation.calculateHMatrices(2, gridObj3)
 
-
-
+def lab5():
+    #gridObj1 = Grid(os.path.join(gridsPath, "Test1_4_4.txt"))
+    #gridObj1.print()
+    element1 = UniversalElement(2)
 
 
 if __name__ == "__main__":
