@@ -59,14 +59,14 @@ class Element:
         self.IDs = IDs
         self.HMatrix = None
 
-    def calculateHMatrix(self, nodes: list[Node], uEl: UniversalElement) -> None:
+    def calculateHMatrix(self, nodes: list[Node], uEl: UniversalElement, glData: GlobalData) -> None:
         '''
         Calculates H matrix for the element.
         '''
         xCoords, yCoords = self.fillXYCoords(nodes)
         dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab = self.fillXYKsiEtaTabs(xCoords, yCoords, uEl)
         dNdXTab, dNdYTab, detTab = self.fillDNdXdNdYTabs(dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab, uEl)
-        ipHMatrices = self.calculateHMatrixForIntegrationPoints(dNdXTab, dNdYTab, detTab, uEl.n)
+        ipHMatrices = self.calculateHMatrixForIntegrationPoints(dNdXTab, dNdYTab, detTab, uEl.n, glData.conductivity)
         
         self.HMatrix = np.zeros((4, 4))
         for i in range(0, uEl.n*uEl.n):
@@ -109,10 +109,12 @@ class Element:
         for j in range(uEl.n*uEl.n):
             mxJ = np.array([[dXdKsiTab[j], dYdKsiTab[j]],
                              [dXdEtaTab[j], dYdEtaTab[j]]])
+            #print(f"Jacobian matrix:\n{mxJ}")
             detJ = np.linalg.det(mxJ)
+            #print(f"Jacobian determinant:\n{detJ}")
             detTab.append(detJ)
-            mx1 = np.array([[dYdEtaTab[j], -dXdEtaTab[j]],
-                             [-dYdKsiTab[j], dXdKsiTab[j]]])
+            mx1 = np.array([[dYdEtaTab[j], -dYdKsiTab[j]],
+                             [-dXdEtaTab[j], dXdKsiTab[j]]])
             for i in range (0, 4):
                 mx2 = np.array([[uEl.dNdKsiTab[j][i]],[uEl.dNdEtaTab[j][i]]])
                 # (1/detJ)*mx1 = mxJ^(-1)
@@ -138,7 +140,7 @@ class Element:
                 dNdYTab[j].append(0)
         return dNdXTab, dNdYTab
 
-    def calculateHMatrixForIntegrationPoints(self, dNdXTab: list, dNdYTab: list, detTab: list, n: int) -> list[np.ndarray]:
+    def calculateHMatrixForIntegrationPoints(self, dNdXTab: list, dNdYTab: list, detTab: list, n: int, k: int) -> list[np.ndarray]:
         '''
         Calculates H matrix for each integration point. Returns list of matrixes.
         '''
@@ -152,7 +154,7 @@ class Element:
                              [dNdYTab[i][1]],
                              [dNdYTab[i][2]],
                              [dNdYTab[i][3]]])
-            ipMxH = 30*(np.matmul(mxDNdX, mxDNdX.transpose()) + np.matmul(mxDNdY, mxDNdY.transpose()))*detTab[0]
+            ipMxH = k*(np.matmul(mxDNdX, mxDNdX.transpose()) + np.matmul(mxDNdY, mxDNdY.transpose()))*detTab[i]
             #print(f"IP {i+1}:\n{ipMxH}")
             mxHTab.append(ipMxH)
         return mxHTab
@@ -257,7 +259,7 @@ class Grid:
                                       self.nodes[element.IDs[1] - 1],
                                       self.nodes[element.IDs[2] - 1],
                                       self.nodes[element.IDs[3] - 1]],
-                                      uEl)
+                                      uEl, self.globalData)
             print(element.HMatrix)
     
     def print(self) -> None:

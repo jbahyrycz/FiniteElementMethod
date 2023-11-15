@@ -66,7 +66,7 @@ def lab4():
     globalDataDict = {}
     globalDataDict["SimulationTime"] = 0
     globalDataDict["SimulationStepTime"] = 0
-    globalDataDict["Conductivity"] = 0
+    globalDataDict["Conductivity"] = 30
     globalDataDict["Alfa"] = 0
     globalDataDict["Tot"] = 0
     globalDataDict["InitialTemp"] = 0
@@ -82,15 +82,14 @@ def lab4():
     grid.calculateHMatrices(2)
     '''
 
-    
-    gridObj1 = Grid(os.path.join(gridsPath, "Test1_4_4.txt"))
-    gridObj1.calculateHMatrices(3)
+    #gridObj1 = Grid(os.path.join(gridsPath, "Test1_4_4.txt"))
+    #gridObj1.print()
+    #gridObj1.calculateHMatrices(2)
     gridObj2 = Grid(os.path.join(gridsPath, "Test2_4_4_MixGrid.txt"))
-    #gridObj2.calculateHMatrices(3)
-    gridObj3 = Grid(os.path.join(gridsPath, "Test3_31_31_kwadrat.txt"))
+    gridObj2.print()
+    gridObj2.calculateHMatrices(2)
+    #gridObj3 = Grid(os.path.join(gridsPath, "Test3_31_31_kwadrat.txt"))
     #gridObj3.calculateHMatrices(3)
-    
-
 
 
 
