@@ -1,6 +1,13 @@
 from grid import *
 import numpy as np
+from common import *
 class HMatrixCalculation():
+    '''
+    Calculations of H matrix for each element of the given grid.
+    '''
+    def __init__(self):
+        raise MyException("HMatrixCalculation is an abstract class, you cannot create an instance of this class.")
+    
     @staticmethod
     def calculateHMatrices(n: int, grid: Grid) -> None:
         '''

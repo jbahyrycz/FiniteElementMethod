@@ -2,14 +2,25 @@ from numerical_integration import *
 from math import *
 from common import *
 
-
 class UniversalElement(GaussianQuadrature):
+    '''
+    Contains all the calculations that are universal for every 4-node element.
+    dNdKsiTab:      table of dN/dKsi results for N1, N2, N3, N4 in integration points (n^2x4)
+    dNdEtaTab:      table of dN/dEta results for N1, N2, N3, N4 in integration points (n^2x4)
+    surfaces:       table of Surface type elements, necessary for calculations that take border conditions into account
+    '''
     def __init__(self, n):
         super().__init__(n, None)
         self.dNdKsiTab = []
         self.dNdEtaTab = []
-        surface = Surface(n)
         self.fillTabs()
+        self.surfaces = [
+            Surface(n), # down
+            Surface(n), # right
+            Surface(n), # up
+            Surface(n)  # left
+        ]
+        self.fillSurfaceTab()
             
     def initializeTabs(self):
         for j in range(self.n*self.n):
@@ -21,7 +32,7 @@ class UniversalElement(GaussianQuadrature):
 
     def fillTabs(self):
         '''
-        Calculates dN/dKsi and dN/dEta for N1, N2, N3, N4 and in integration points. Result is stored in tables.
+        Calculates dN/dKsi and dN/dEta for N1, N2, N3, N4 in integration points. Result is stored in tables.
         '''
         self.initializeTabs()
         for j in range(self.n*self.n):
@@ -31,28 +42,48 @@ class UniversalElement(GaussianQuadrature):
                 self.dNdKsiTab[j][i] = dNdKsiFunTab[i](eta)
                 self.dNdEtaTab[j][i] = dNdEtaFunTab[i](ksi)
 
+    def fillSurfaceTab(self):
+        '''
+        Calculates integration points coords for surface calculations.
+        '''
+        for j in range(0, len(self.surfaces)):
+            ksiList = []
+            etaList = []
+            if j % 2 == 0:
+                ksiList = self.points
+                for i in range(0, self.n):
+                    etaList.append(j - 1)
+            else:
+                etaList = self.points
+                for i in range(0, self.n):
+                    ksiList.append(2 - j)
+            self.surfaces[j].fillN(ksiList, etaList)
+
 class Surface():
+    '''
+    Describes the surface of the universal element.
+    n:      number of integration points
+    N:      table of N(ksi, eta) for N1, N2, N3, N4 and for each integration point on the surface
+    '''
     def __init__(self, n: int):
         self.n = n
         self.N = []
-        self.fillN()
 
-    def fillN(self):
-        self.initializeN()
-        print2dTab(self.N)
-        '''
-        for j in range(self.n):
-            ksi = self.points[j%self.n]
-            eta = self.points[j//self.n]
-            for i in range (0, 4):
-                self.N[j][i] = NFunTab[i](ksi, eta)
-        '''
-    
     def initializeN(self):
         for j in range (0, self.n):
             self.N.append([])
             for i in range (0, 4):
                 self.N[j].append(0)
+
+    def fillN(self, ksiList: list[float], etaList: list[float]):
+        '''
+        Calculates N(ksi, eta) for N1, N2, N3, N4 and for each integration point on the surface
+        Results are stored in the table
+        '''
+        self.initializeN()
+        for j in range(0, len(ksiList)):
+            for i in range(0, 4):
+                self.N[j][i] = NFunTab[i](ksiList[j], etaList[j])
 
 def N1(ksi: float, eta: float) -> float:
     return (1/4)*(1-ksi)*(1-eta)

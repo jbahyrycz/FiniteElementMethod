@@ -3,6 +3,7 @@ from grid import *
 from numerical_integration import *
 from universal_element import *
 from H_matrix_calculation import *
+from Hbc_matrix_calculation import *
 
 scriptPath = os.getcwd()
 gridsPath = os.path.join(scriptPath, "Data", "Grids")
@@ -14,21 +15,43 @@ def fun1(x: float) -> float:
 def fun2(x: float, y: float) -> float:
     return 5*pow(x, 2)*pow(y, 2) + 3*x*y + 6
 
+# Creates 1-element grid for testing purposes
+def createTestGrid() -> Grid:
+    globalDataDict = {}
+    globalDataDict["SimulationTime"] = 0
+    globalDataDict["SimulationStepTime"] = 0
+    globalDataDict["Conductivity"] = 30
+    globalDataDict["Alfa"] = 25
+    globalDataDict["Tot"] = 0
+    globalDataDict["InitialTemp"] = 0
+    globalDataDict["Density"] = 0
+    globalDataDict["SpecificHeat"] = 0
+    globalDataDict["Nodesnumber"] = 4
+    globalDataDict["Elementsnumber"] = 1
+    globalData = GlobalData(globalDataDict)
+    nodes = [Node(1, 0, 0), Node(2, 0.025, 0), Node(3, 0.025, 0.025), Node(4, 0, 0.025)]
+    for node in nodes:
+        node.BC = 1
+    elements = [Element(1, [1, 2, 3, 4])]
+    testGrid = Grid(globalData=globalData, nodes=nodes, elements=elements)
+    return testGrid
+
 def main():
     try:
-        #lab1()
+        gridObj1, gridObj2, gridObj3 = lab1()
+        testGrid = createTestGrid()
         #lab2()
         #lab3()
-        #lab4()
-        lab5()
+        #lab4(testGrid, gridObj1, gridObj2, gridObj3)
+        lab5(testGrid, gridObj1, gridObj2, gridObj3)
     except MyException as e:
         print(e)
 
-def lab1():
+def lab1() -> list[Grid]:
     gridObj1 = Grid(os.path.join(gridsPath, "Test1_4_4.txt"))
-    gridObj1.print()
     gridObj2 = Grid(os.path.join(gridsPath, "Test2_4_4_MixGrid.txt"))
     gridObj3 = Grid(os.path.join(gridsPath, "Test3_31_31_kwadrat.txt"))
+    return gridObj1, gridObj2, gridObj3
 
 def lab2():
     f1n2 = GaussianQuadrature(2, fun1)
@@ -62,42 +85,17 @@ def lab3():
     #print("dN/dEta:")
     #print2dTab(element3.dNdEta)
 
-def lab4():
-    '''
-    # Test grid
-    globalDataDict = {}
-    globalDataDict["SimulationTime"] = 0
-    globalDataDict["SimulationStepTime"] = 0
-    globalDataDict["Conductivity"] = 30
-    globalDataDict["Alfa"] = 0
-    globalDataDict["Tot"] = 0
-    globalDataDict["InitialTemp"] = 0
-    globalDataDict["Density"] = 0
-    globalDataDict["SpecificHeat"] = 0
-    globalDataDict["Nodesnumber"] = 4
-    globalDataDict["Elementsnumber"] = 1
-    globalData = GlobalData(globalDataDict)
-    nodes = [Node(1, 0, 0), Node(2, 0.025, 0), Node(3, 0.025, 0.025), Node(4, 0, 0.025)]
-    elements = [Element(1, [1, 2, 3, 4])]
-    grid = Grid(globalData=globalData, nodes=nodes, elements=elements)
-    #grid.print()
-    HMatrixCalculation.calculateHMatrices(2, grid)
-    '''
+def lab4(testGrid: Grid, test1: Grid, test2: Grid, test3: Grid) -> None:
+    HMatrixCalculation.calculateHMatrices(2, testGrid)
+    #HMatrixCalculation.calculateHMatrices(2, test1)
+    #HMatrixCalculation.calculateHMatrices(2, test2)
+    #HMatrixCalculation.calculateHMatrices(2, test3)
 
-    #gridObj1 = Grid(os.path.join(gridsPath, "Test1_4_4.txt"))
-    #gridObj1.print()
-    #HMatrixCalculation.calculateHMatrices(2, gridObj1)
-    gridObj2 = Grid(os.path.join(gridsPath, "Test2_4_4_MixGrid.txt"))
-    gridObj2.print()
-    HMatrixCalculation.calculateHMatrices(2, gridObj2)
-    #gridObj3 = Grid(os.path.join(gridsPath, "Test3_31_31_kwadrat.txt"))
-    #HMatrixCalculation.calculateHMatrices(2, gridObj3)
-
-def lab5():
-    #gridObj1 = Grid(os.path.join(gridsPath, "Test1_4_4.txt"))
-    #gridObj1.print()
-    element1 = UniversalElement(2)
-
+def lab5(testGrid: Grid, test1: Grid, test2: Grid, test3: Grid) -> None:
+    #HbcMatrixCalculation.calculateHbcMatrices(2, testGrid)
+    HbcMatrixCalculation.calculateHbcMatrices(4, test1)
+    #HbcMatrixCalculation.calculateHbcMatrices(2, test2)
+    #HbcMatrixCalculation.calculateHbcMatrices(2, test3)
 
 if __name__ == "__main__":
     main()
