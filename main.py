@@ -3,7 +3,7 @@ from grid import *
 from numerical_integration import *
 from universal_element import *
 from H_matrix_calculation import *
-from Hbc_matrix_calculation import *
+from Hbc_matrix_and_P_vector_calculation import *
 
 scriptPath = os.getcwd()
 gridsPath = os.path.join(scriptPath, "Data", "Grids")
@@ -22,7 +22,7 @@ def createTestGrid() -> Grid:
     globalDataDict["SimulationStepTime"] = 0
     globalDataDict["Conductivity"] = 30
     globalDataDict["Alfa"] = 25
-    globalDataDict["Tot"] = 0
+    globalDataDict["Tot"] = 1200
     globalDataDict["InitialTemp"] = 0
     globalDataDict["Density"] = 0
     globalDataDict["SpecificHeat"] = 0
@@ -43,7 +43,8 @@ def main():
         #lab2()
         #lab3()
         #lab4(testGrid, gridObj1, gridObj2, gridObj3)
-        lab5(testGrid, gridObj1, gridObj2, gridObj3)
+        #lab5(testGrid, gridObj1, gridObj2, gridObj3)
+        lab6(testGrid, gridObj1, gridObj2, gridObj3)
     except MyException as e:
         print(e)
 
@@ -86,16 +87,23 @@ def lab3():
     #print2dTab(element3.dNdEta)
 
 def lab4(testGrid: Grid, test1: Grid, test2: Grid, test3: Grid) -> None:
-    HMatrixCalculation.calculateHMatrices(2, testGrid)
-    #HMatrixCalculation.calculateHMatrices(2, test1)
-    #HMatrixCalculation.calculateHMatrices(2, test2)
-    #HMatrixCalculation.calculateHMatrices(2, test3)
+    HMatrixCalculation.calculate(2, testGrid)
+    #HMatrixCalculation.calculate(2, test1)
+    #HMatrixCalculation.calculate(2, test2)
+    #HMatrixCalculation.calculate(2, test3)
 
 def lab5(testGrid: Grid, test1: Grid, test2: Grid, test3: Grid) -> None:
-    #HbcMatrixCalculation.calculateHbcMatrices(2, testGrid)
-    HbcMatrixCalculation.calculateHbcMatrices(4, test1)
-    #HbcMatrixCalculation.calculateHbcMatrices(2, test2)
-    #HbcMatrixCalculation.calculateHbcMatrices(2, test3)
+    #HbcMatrixAndPVectorCalculation.calculate(2, testGrid)
+    HbcMatrixAndPVectorCalculation.calculate(4, test1)
+    #HbcMatrixAndPVectorCalculation.calculate(2, test2)
+    #HbcMatrixAndPVectorCalculation.calculate(2, test3)
+
+def lab6(testGrid: Grid, test1: Grid, test2: Grid, test3: Grid) -> None:
+    #HbcMatrixAndPVectorCalculation.calculate(2, testGrid)
+    HbcMatrixAndPVectorCalculation.calculate(2, test1)
+    #HbcMatrixAndPVectorCalculation.calculate(2, test2)
+    #HbcMatrixAndPVectorCalculation.calculate(2, test3)
+    pass
 
 if __name__ == "__main__":
     main()

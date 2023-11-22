@@ -55,6 +55,7 @@ class Element:
     IDs:        IDs od nodes belonging to the element
     H:          H matrix for the element (4x4)
     Hbc:        Hbc matrix for the element (4x4)
+    P:          P vector for the element (1X4)
     '''
     def __init__(self, id: int, IDs: list[int]):
         self.id = id

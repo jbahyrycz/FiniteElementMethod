@@ -9,28 +9,28 @@ class HMatrixCalculation():
         raise MyException("HMatrixCalculation is an abstract class, you cannot create an instance of this class.")
     
     @staticmethod
-    def calculateHMatrices(n: int, grid: Grid) -> None:
+    def calculate(n: int, grid: Grid) -> None:
         '''
         Calculates H matrices for each element in the grid, output is stored in Element.Hmatrix.
         '''
         uEl = UniversalElement(n)
         for element in grid.elements:
-            element.H = HMatrixCalculation.calculateHMatrix([grid.nodes[element.IDs[0] - 1],
+            element.H = HMatrixCalculation.calculateForElement([grid.nodes[element.IDs[0] - 1],
                                       grid.nodes[element.IDs[1] - 1],
                                       grid.nodes[element.IDs[2] - 1],
                                       grid.nodes[element.IDs[3] - 1]],
                                       uEl, grid.globalData)
-            print(element.H)
+            print(f"H:\n{element.H}")
 
     @staticmethod
-    def calculateHMatrix(nodes: list[Node], uEl: UniversalElement, glData: GlobalData) -> None:
+    def calculateForElement(nodes: list[Node], uEl: UniversalElement, glData: GlobalData) -> None:
         '''
         Calculates H matrix for the element.
         '''
         xCoords, yCoords = HMatrixCalculation.fillXYCoords(nodes)
         dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab = HMatrixCalculation.fillXYKsiEtaTabs(xCoords, yCoords, uEl)
         dNdXTab, dNdYTab, detTab = HMatrixCalculation.fillDNdXdNdYTabs(dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab, uEl)
-        ipHMatrices = HMatrixCalculation.calculateHMatrixForIntegrationPoints(dNdXTab, dNdYTab, detTab, uEl.n, glData.conductivity)
+        ipHMatrices = HMatrixCalculation.calculateForIntegrationPoints(dNdXTab, dNdYTab, detTab, uEl.n, glData.conductivity)
         
         H = np.zeros((4, 4))
         for i in range(0, uEl.n*uEl.n):
@@ -110,7 +110,7 @@ class HMatrixCalculation():
         return dNdXTab, dNdYTab
 
     @staticmethod
-    def calculateHMatrixForIntegrationPoints(dNdXTab: list, dNdYTab: list, detTab: list, n: int, k: int) -> list[np.ndarray]:
+    def calculateForIntegrationPoints(dNdXTab: list, dNdYTab: list, detTab: list, n: int, k: int) -> list[np.ndarray]:
         '''
         Calculates H matrix for each integration point. Returns list of matrixes.
         '''
