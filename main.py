@@ -4,6 +4,7 @@ from numerical_integration import *
 from universal_element import *
 from H_matrix_calculation import *
 from Hbc_matrix_and_P_vector_calculation import *
+from system_of_equations import *
 
 scriptPath = os.getcwd()
 gridsPath = os.path.join(scriptPath, "Data", "Grids")
@@ -44,7 +45,8 @@ def main():
         #lab3()
         #lab4(testGrid, gridObj1, gridObj2, gridObj3)
         #lab5(testGrid, gridObj1, gridObj2, gridObj3)
-        lab6(testGrid, gridObj1, gridObj2, gridObj3)
+        #lab6(testGrid, gridObj1, gridObj2, gridObj3)
+        lab7(testGrid, gridObj1, gridObj2, gridObj3)
     except MyException as e:
         print(e)
 
@@ -103,7 +105,17 @@ def lab6(testGrid: Grid, test1: Grid, test2: Grid, test3: Grid) -> None:
     HbcMatrixAndPVectorCalculation.calculate(2, test1)
     #HbcMatrixAndPVectorCalculation.calculate(2, test2)
     #HbcMatrixAndPVectorCalculation.calculate(2, test3)
-    pass
+
+def lab7(testGrid: Grid, test1: Grid, test2: Grid, test3: Grid) -> None:
+    #HMatrixCalculation.calculate(2, test1)
+    #HbcMatrixAndPVectorCalculation.calculate(2, test1)
+    #soe1 = SystemOfEquations(test1)
+    #soe1.solve()
+
+    HMatrixCalculation.calculate(2, test2)
+    HbcMatrixAndPVectorCalculation.calculate(2, test2)
+    soe2 = SystemOfEquations(test2)
+    soe2.solve()
 
 if __name__ == "__main__":
     main()

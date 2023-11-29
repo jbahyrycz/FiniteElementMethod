@@ -62,6 +62,7 @@ class Element:
         self.IDs = IDs
         self.H = None
         self.Hbc = None
+        self.P = None
 
     def print(self) -> None:
         print(f"Element {self.id}: \t{self.IDs}")

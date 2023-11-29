@@ -20,7 +20,7 @@ class HbcMatrixAndPVectorCalculation():
                                                                 grid.nodes[element.IDs[2] - 1],
                                                                 grid.nodes[element.IDs[3] - 1]],
                                                                 uEl, grid.globalData)
-            print(f"Hbc:\n{element.Hbc}\nP:\n{element.P}")
+            #print(f"Hbc:\n{element.Hbc}\nP:\n{element.P}")
 
     @staticmethod
     def calculateForElement(nodes: list[Node], uEl: UniversalElement, glData: GlobalData) -> None:

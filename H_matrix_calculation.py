@@ -20,7 +20,7 @@ class HMatrixCalculation():
                                       grid.nodes[element.IDs[2] - 1],
                                       grid.nodes[element.IDs[3] - 1]],
                                       uEl, grid.globalData)
-            print(f"H:\n{element.H}")
+            #print(f"H:\n{element.H}")
 
     @staticmethod
     def calculateForElement(nodes: list[Node], uEl: UniversalElement, glData: GlobalData) -> None:
