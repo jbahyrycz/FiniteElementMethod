@@ -2,8 +2,7 @@ import os
 from grid import *
 from numerical_integration import *
 from universal_element import *
-from H_matrix_calculation import *
-from Hbc_matrix_and_P_vector_calculation import *
+from local_matrices_calculation import *
 from system_of_equations import *
 
 scriptPath = os.getcwd()
@@ -25,8 +24,8 @@ def createTestGrid() -> Grid:
     globalDataDict["Alfa"] = 25
     globalDataDict["Tot"] = 1200
     globalDataDict["InitialTemp"] = 0
-    globalDataDict["Density"] = 0
-    globalDataDict["SpecificHeat"] = 0
+    globalDataDict["Density"] = 7800
+    globalDataDict["SpecificHeat"] = 700
     globalDataDict["Nodesnumber"] = 4
     globalDataDict["Elementsnumber"] = 1
     globalData = GlobalData(globalDataDict)
@@ -46,7 +45,8 @@ def main():
         #lab4(testGrid, gridObj1, gridObj2, gridObj3)
         #lab5(testGrid, gridObj1, gridObj2, gridObj3)
         #lab6(testGrid, gridObj1, gridObj2, gridObj3)
-        lab7(testGrid, gridObj1, gridObj2, gridObj3)
+        #lab7(testGrid, gridObj1, gridObj2, gridObj3)
+        lab8(testGrid, gridObj1, gridObj2, gridObj3)
     except MyException as e:
         print(e)
 
@@ -58,25 +58,25 @@ def lab1() -> list[Grid]:
 
 def lab2():
     f1n2 = GaussianQuadrature(2, fun1)
-    print(f1n2.calculateIntegral1d())
+    print(f1n2.calculate1d())
     f1n3 = GaussianQuadrature(3, fun1)
-    print(f1n3.calculateIntegral1d())
+    print(f1n3.calculate1d())
     f1n4 = GaussianQuadrature(4, fun1)
-    print(f1n4.calculateIntegral1d())
+    print(f1n4.calculate1d())
 
     f2n2 = GaussianQuadrature(2, fun2)
-    print(f2n2.calculateIntegral2d())
+    print(f2n2.calculate2d())
     f2n3 = GaussianQuadrature(3, fun2)
-    print(f2n3.calculateIntegral2d())
+    print(f2n3.calculate2d())
     f2n4 = GaussianQuadrature(4, fun2)
-    print(f2n4.calculateIntegral2d())
+    print(f2n4.calculate2d())
 
 def lab3():
     #el2n = UniversalElement(2)
     #print("dN/dKsi:")
     #print2dTab(el2n.dNdKsiTab)
     #print("dN/dEta:")
-    #print2dTab(el2n.dNdEta)
+    #print2dTab(el2n.dNdEtaTab)
     element2 = UniversalElement(3)
     print("dN/dKsi:")
     print2dTab(element2.dNdKsiTab)
@@ -86,36 +86,51 @@ def lab3():
     #print("dN/dKsi:")
     #print2dTab(element3.dNdKsiTab)
     #print("dN/dEta:")
-    #print2dTab(element3.dNdEta)
+    #print2dTab(element3.dNdEtaTab)
 
 def lab4(testGrid: Grid, test1: Grid, test2: Grid, test3: Grid) -> None:
-    HMatrixCalculation.calculate(2, testGrid)
+    LocalMatricesCalculation.calculate(2, testGrid)
     #HMatrixCalculation.calculate(2, test1)
     #HMatrixCalculation.calculate(2, test2)
     #HMatrixCalculation.calculate(2, test3)
 
 def lab5(testGrid: Grid, test1: Grid, test2: Grid, test3: Grid) -> None:
-    #HbcMatrixAndPVectorCalculation.calculate(2, testGrid)
-    HbcMatrixAndPVectorCalculation.calculate(4, test1)
-    #HbcMatrixAndPVectorCalculation.calculate(2, test2)
-    #HbcMatrixAndPVectorCalculation.calculate(2, test3)
+    #LocalMatricesCalculation.calculate(2, testGrid)
+    LocalMatricesCalculation.calculate(4, test1)
+    #LocalMatricesCalculation.calculate(2, test2)
+    #LocalMatricesCalculation.calculate(2, test3)
 
 def lab6(testGrid: Grid, test1: Grid, test2: Grid, test3: Grid) -> None:
-    #HbcMatrixAndPVectorCalculation.calculate(2, testGrid)
-    HbcMatrixAndPVectorCalculation.calculate(2, test1)
-    #HbcMatrixAndPVectorCalculation.calculate(2, test2)
-    #HbcMatrixAndPVectorCalculation.calculate(2, test3)
+    #LocalMatricesCalculation.calculate(2, testGrid)
+    LocalMatricesCalculation.calculate(2, test1)
+    #LocalMatricesCalculation.calculate(2, test2)
+    #LocalMatricesCalculation.calculate(2, test3)
 
 def lab7(testGrid: Grid, test1: Grid, test2: Grid, test3: Grid) -> None:
     #HMatrixCalculation.calculate(2, test1)
-    #HbcMatrixAndPVectorCalculation.calculate(2, test1)
+    #LocalMatricesCalculation.calculate(2, test1)
     #soe1 = SystemOfEquations(test1)
     #soe1.solve()
 
-    HMatrixCalculation.calculate(2, test2)
-    HbcMatrixAndPVectorCalculation.calculate(2, test2)
+    LocalMatricesCalculation.calculate(2, test2)
+    #LocalMatricesCalculation.calculate(2, test2)
     soe2 = SystemOfEquations(test2)
     soe2.solve()
+
+def lab8(testGrid: Grid, test1: Grid, test2: Grid, test3: Grid) -> None:
+    LocalMatricesCalculation.calculate(2, test2)
+    #LocalMatricesCalculation.calculate(2, test2)
+    simulateTemperature(test2)
+
+def simulateTemperature(grid: Grid) -> None:
+    soe = SystemOfEquations(grid)
+    tau0 = 0
+    tauK = grid.globalData.simulationTime
+    step = grid.globalData.simulationStepTime
+    print(f"Time        Min temp    Max temp")
+    while tau0 < tauK:
+        soe.solve()
+        tau0+=step
 
 if __name__ == "__main__":
     main()

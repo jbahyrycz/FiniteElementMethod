@@ -9,25 +9,42 @@ class SystemOfEquations():
 
     H:      global matrix of H + Hbc od each element of the grid
     P:      global P vector
+    C:      global C matrix
+    t0:     vector filled with value of initail temperature
+    step:   simulation step time
+    dTau:   current time - start time
     dim:    dimensions of H matrix and P vector 
     '''
     def __init__(self, grid: Grid):
         self.dim = grid.globalData.nodesNumber
+        self.t0 = np.zeros((self.dim, 1))
+        self.step = grid.globalData.simulationStepTime
+        self.dTau = 0
         self.H = np.zeros((self.dim, self.dim))
         self.P = np.zeros((self.dim, 1))
-        self.aggregateH(grid)
+        self.C = np.zeros((self.dim, self.dim))
+        self.fillT(self.dim, grid.globalData.initialTemp)
+        self.aggregateHAndC(grid)
         self.aggreagteP(grid)
 
-    def aggregateH(self, grid: Grid) -> None:
+    def fillT(self, dim: int, t0: float) -> None:
         '''
-        Creates global H matrix from local (per element) matrices H and Hbc.
+        Creates vector filled with initial temperature data.
+        '''
+        for i in range(0, dim):
+            self.t0[i] = t0
+
+    def aggregateHAndC(self, grid: Grid) -> None:
+        '''
+        Creates global H and C matrices.
         '''
         for element in grid.elements:
             localH = element.H + element.Hbc
             for j in range(0, 4):
                 for i in range(0, 4):
                     self.H[element.IDs[j] - 1][element.IDs[i] - 1] += localH[j][i]
-        print(self.H)
+                    self.C[element.IDs[j] - 1][element.IDs[i] - 1] += element.C[j][i]
+        #print(f"Global H:\n{self.H}\nGlobal C:{self.C}")
 
     def aggreagteP(self, grid: Grid) -> None:
         '''
@@ -36,16 +53,19 @@ class SystemOfEquations():
         for element in grid.elements:
             for i in range(0, 4):
                 self.P[element.IDs[i] - 1] += element.P[i]
-        print(self.P)
+        #print(f"Global P:\n{self.P}")
 
     def solve(self) -> NDArray:
         '''
-        Solves system of equations created form H matrix and P vector.
-        H[0] = P[0]
-        H[1] = P[1]
+        Solves system of equations for calculating temperature in each node at any given time.
+        H[0] + C[0]/dTau * t1[0] = C[0]/dTau * t0[0] + P[0]
+        H[1] + C[1]/dTau * t1[1] = C[1]/dTau * t0[1] + P[1]
         ...
-        H[n] = P[n]
+        H[n] + C[n]/dTau * t1[n]] = C[n]/dTau * t0[n] + P[n]
         '''
-        result = linalg.solve(self.H, self.P)
-        print(result)
+        self.dTau += self.step
+        H = self.H + self.C/(self.dTau)
+        P = self.P + np.matmul(self.C/(self.dTau), self.t0)
+        result = linalg.solve(H, P)
+        print(f"{(self.dTau):<12}{round(min(result)[0], 3):<12}{round(max(result)[0], 3):<12}")
         return result

@@ -4,6 +4,7 @@ from common import *
 class GaussianQuadrature:
     '''
     A class for numerical integration using Gaussian Quadrature.
+    
     fun:        function to integrate
     n:          number of integration points
     points:     list of integration points, xi
@@ -76,7 +77,7 @@ class GaussianQuadrature:
             case _:
                 raise MyException("Number of nodes in numerical integration (n) must be an integer in range (1;5)")      
 
-    def calculateIntegral1d(self) -> float:
+    def calculate1d(self) -> float:
         '''
         Calculates integral for function of 1 variable f(x).
         '''
@@ -86,7 +87,7 @@ class GaussianQuadrature:
             result += self.weights[i] * self.fun(x)
         return result
     
-    def calculateIntegral2d(self) -> float:
+    def calculate2d(self) -> float:
         '''
         Calculates integral for function of 2 variables f(x, y).
         '''

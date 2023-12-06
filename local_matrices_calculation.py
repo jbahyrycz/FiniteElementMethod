@@ -1,42 +1,55 @@
 from grid import *
 import numpy as np
 from common import *
-class HMatrixCalculation():
+class LocalMatricesCalculation():
     '''
-    Calculations of H matrix for each element of the given grid.
+    Abstract class for calculating of H, C, Hbc matrices and P vector for each element of the given grid.
     '''
     def __init__(self):
-        raise MyException("HMatrixCalculation is an abstract class, you cannot create an instance of this class.")
+        raise MyException("LocalMatricesCalculation is an abstract class, you cannot create an instance of this class.")
     
     @staticmethod
     def calculate(n: int, grid: Grid) -> None:
         '''
-        Calculates H matrices for each element in the grid, output is stored in Element.Hmatrix.
+        Calculates H, C, Hbc matrices and P vector for each element in the grid, output is stored in Element class.
         '''
         uEl = UniversalElement(n)
         for element in grid.elements:
-            element.H = HMatrixCalculation.calculateForElement([grid.nodes[element.IDs[0] - 1],
+            element.H, element.C, element.Hbc, element.P = LocalMatricesCalculation.calculateForElement([grid.nodes[element.IDs[0] - 1],
                                       grid.nodes[element.IDs[1] - 1],
                                       grid.nodes[element.IDs[2] - 1],
                                       grid.nodes[element.IDs[3] - 1]],
                                       uEl, grid.globalData)
-            #print(f"H:\n{element.H}")
+            #print(f"H:\n{element.H}\nC:{element.C}\nHbc:\n{element.Hbc}\nP:\n{element.P}")
 
     @staticmethod
     def calculateForElement(nodes: list[Node], uEl: UniversalElement, glData: GlobalData) -> None:
         '''
-        Calculates H matrix for the element.
+        Calculates H, C, Hbc marices and P vector for the element.
         '''
-        xCoords, yCoords = HMatrixCalculation.fillXYCoords(nodes)
-        dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab = HMatrixCalculation.fillXYKsiEtaTabs(xCoords, yCoords, uEl)
-        dNdXTab, dNdYTab, detTab = HMatrixCalculation.fillDNdXdNdYTabs(dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab, uEl)
-        ipHMatrices = HMatrixCalculation.calculateForIntegrationPoints(dNdXTab, dNdYTab, detTab, uEl.n, glData.conductivity)
+        xCoords, yCoords = LocalMatricesCalculation.fillXYCoords(nodes)
+        dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab = LocalMatricesCalculation.fillXYKsiEtaTabs(xCoords, yCoords, uEl)
+        dNdXTab, dNdYTab, detTab = LocalMatricesCalculation.fillDNdXdNdYTabs(dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab, uEl)
+        ipHMatrices, ipCMatrices = LocalMatricesCalculation.calculateForIntegrationPoints(dNdXTab, dNdYTab, uEl.NTab, detTab, uEl.n, glData.conductivity, glData.density, glData.specificHeat)
         
         H = np.zeros((4, 4))
+        C = np.zeros((4, 4))
+        Hbc = np.zeros((4, 4))
+        P = np.zeros((4, 1))
+
         for i in range(0, uEl.n*uEl.n):
-            #print(ipHMatrices[i])
             H += ipHMatrices[i]*(uEl.weights[i//uEl.n])*(uEl.weights[i%uEl.n])
-        return H
+            C += ipCMatrices[i]*(uEl.weights[i//uEl.n])*(uEl.weights[i%uEl.n])
+
+        tempList = []
+        tempList.append(LocalMatricesCalculation.calculateForSurface(uEl.surfaces[0], (nodes[0], nodes[1]), uEl.weights, uEl.n, glData.alfa, glData.tot))
+        tempList.append(LocalMatricesCalculation.calculateForSurface(uEl.surfaces[1], (nodes[1], nodes[2]), uEl.weights, uEl.n, glData.alfa, glData.tot))
+        tempList.append(LocalMatricesCalculation.calculateForSurface(uEl.surfaces[2], (nodes[2], nodes[3]), uEl.weights, uEl.n, glData.alfa, glData.tot))
+        tempList.append(LocalMatricesCalculation.calculateForSurface(uEl.surfaces[3], (nodes[3], nodes[0]), uEl.weights, uEl.n, glData.alfa, glData.tot))
+        for surfaceHbc, surfaceP in tempList:
+            Hbc+=surfaceHbc
+            P+=surfaceP
+        return H, C, Hbc, P
     
     @staticmethod
     def fillXYCoords(nodes: list[Node]) -> tuple[float]:
@@ -57,10 +70,10 @@ class HMatrixCalculation():
         '''
         dXdKsiTab = []; dXdEtaTab = []; dYdKsiTab = []; dYdEtaTab = []
         for i in range(0, uEl.n*uEl.n):
-            dXdKsiTab.append(HMatrixCalculation.dKsi(uEl.dNdKsiTab[i][0], uEl.dNdKsiTab[i][1], uEl.dNdKsiTab[i][2], uEl.dNdKsiTab[i][3], xCoords))
-            dXdEtaTab.append(HMatrixCalculation.dEta(uEl.dNdEtaTab[i][0], uEl.dNdEtaTab[i][1], uEl.dNdEtaTab[i][2], uEl.dNdEtaTab[i][3], xCoords))
-            dYdKsiTab.append(HMatrixCalculation.dKsi(uEl.dNdKsiTab[i][0], uEl.dNdKsiTab[i][1], uEl.dNdKsiTab[i][2], uEl.dNdKsiTab[i][3], yCoords))
-            dYdEtaTab.append(HMatrixCalculation.dKsi(uEl.dNdEtaTab[i][0], uEl.dNdEtaTab[i][1], uEl.dNdEtaTab[i][2], uEl.dNdEtaTab[i][3], yCoords))
+            dXdKsiTab.append(LocalMatricesCalculation.dKsi(uEl.dNdKsiTab[i][0], uEl.dNdKsiTab[i][1], uEl.dNdKsiTab[i][2], uEl.dNdKsiTab[i][3], xCoords))
+            dXdEtaTab.append(LocalMatricesCalculation.dEta(uEl.dNdEtaTab[i][0], uEl.dNdEtaTab[i][1], uEl.dNdEtaTab[i][2], uEl.dNdEtaTab[i][3], xCoords))
+            dYdKsiTab.append(LocalMatricesCalculation.dKsi(uEl.dNdKsiTab[i][0], uEl.dNdKsiTab[i][1], uEl.dNdKsiTab[i][2], uEl.dNdKsiTab[i][3], yCoords))
+            dYdEtaTab.append(LocalMatricesCalculation.dKsi(uEl.dNdEtaTab[i][0], uEl.dNdEtaTab[i][1], uEl.dNdEtaTab[i][2], uEl.dNdEtaTab[i][3], yCoords))
         #print(f"dXdKsiTab: {dXdKsiTab}\ndXdEtaTab: {dXdEtaTab}\ndYdKsiTab: {dYdKsiTab}\ndYdEtaTab: {dYdEtaTab}")
         return dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab
     
@@ -72,7 +85,7 @@ class HMatrixCalculation():
         mxJ: Jacobian matrix
         detJ: Jacobian determinant
         '''
-        dNdXTab, dNdYTab = HMatrixCalculation.initializeDNdXdNdYTabs(uEl.n)
+        dNdXTab, dNdYTab = LocalMatricesCalculation.initializeDNdXdNdYTabs(uEl.n)
         detTab = []
         for j in range(uEl.n*uEl.n):
             mxJ = np.array([[dXdKsiTab[j], dYdKsiTab[j]],
@@ -110,11 +123,12 @@ class HMatrixCalculation():
         return dNdXTab, dNdYTab
 
     @staticmethod
-    def calculateForIntegrationPoints(dNdXTab: list, dNdYTab: list, detTab: list, n: int, k: int) -> list[np.ndarray]:
+    def calculateForIntegrationPoints(dNdXTab: list, dNdYTab: list, NTab: list, detTab: list, n: int, k: int, ro: int, c: int) -> list[np.ndarray]:
         '''
-        Calculates H matrix for each integration point. Returns list of matrixes.
+        Calculates H, C matrices for each integration point. Returns list of matrices.
         '''
         mxHTab = []
+        mxCTab = []
         for i in range(0, n*n):
             mxDNdX = np.array([[dNdXTab[i][0]],
                              [dNdXTab[i][1]],
@@ -124,10 +138,38 @@ class HMatrixCalculation():
                              [dNdYTab[i][1]],
                              [dNdYTab[i][2]],
                              [dNdYTab[i][3]]])
+            mxN = np.array([[NTab[i][0]],
+                             [NTab[i][1]],
+                             [NTab[i][2]],
+                             [NTab[i][3]]])
             ipMxH = k*(np.matmul(mxDNdX, mxDNdX.transpose()) + np.matmul(mxDNdY, mxDNdY.transpose()))*detTab[i]
+            ipMxC = c*ro*(np.matmul(mxN, mxN.transpose()))*detTab[i]
             #print(f"IP {i+1}:\n{ipMxH}")
             mxHTab.append(ipMxH)
-        return mxHTab
+            mxCTab.append(ipMxC)
+        return mxHTab, mxCTab
+    
+    @staticmethod
+    def calculateForSurface(surface: Surface, nodes: tuple[Node], weights: list[float], n: int, alfa: int, tot: int) -> tuple:
+        '''
+        Calculates Hbc matrix and P vector for the given surface of the element.
+        '''
+        Hbc = np.zeros((4, 4))
+        P = np.zeros((4, 1))
+        if nodes[0].BC == 0 or nodes[1].BC == 0:
+            return Hbc, P
+        L = sqrt(pow(nodes[0].x-nodes[1].x, 2)+pow(nodes[0].y-nodes[1].y, 2))
+        detJ = L/2
+        for i in range(0, n):
+            mx = np.array([[surface.N[i][0]],
+                            [surface.N[i][1]],
+                            [surface.N[i][2]],
+                            [surface.N[i][3]]])
+            Hbc += np.matmul(mx, mx.transpose())*weights[i]
+            P += mx*weights[i]
+        Hbc = Hbc*alfa*detJ
+        P = P*alfa*tot*detJ
+        return Hbc, P
 
     @staticmethod
     def dKsi(dN1dKsi: float,

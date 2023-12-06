@@ -13,6 +13,7 @@ class UniversalElement(GaussianQuadrature):
         super().__init__(n, None)
         self.dNdKsiTab = []
         self.dNdEtaTab = []
+        self.NTab = []
         self.fillTabs()
         self.surfaces = [
             Surface(n), # down
@@ -26,9 +27,11 @@ class UniversalElement(GaussianQuadrature):
         for j in range(self.n*self.n):
             self.dNdKsiTab.append([])
             self.dNdEtaTab.append([])
+            self.NTab.append([])
             for i in range (0, 4):
                 self.dNdKsiTab[j].append(0)
                 self.dNdEtaTab[j].append(0)
+                self.NTab[j].append(0)
 
     def fillTabs(self):
         '''
@@ -41,6 +44,7 @@ class UniversalElement(GaussianQuadrature):
             for i in range (0, 4):
                 self.dNdKsiTab[j][i] = dNdKsiFunTab[i](eta)
                 self.dNdEtaTab[j][i] = dNdEtaFunTab[i](ksi)
+                self.NTab[j][i] = NFunTab[i](ksi, eta)
 
     def fillSurfaceTab(self):
         '''
