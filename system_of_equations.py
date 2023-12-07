@@ -64,8 +64,8 @@ class SystemOfEquations():
         H[n] + C[n]/dTau * t1[n]] = C[n]/dTau * t0[n] + P[n]
         '''
         self.dTau += self.step
-        H = self.H + self.C/(self.dTau)
-        P = self.P + np.matmul(self.C/(self.dTau), self.t0)
+        H = self.H + self.C/(self.step)
+        P = self.P + np.matmul(self.C/(self.step), self.t0)
         result = linalg.solve(H, P)
-        print(f"{(self.dTau):<12}{round(min(result)[0], 3):<12}{round(max(result)[0], 3):<12}")
+        self.t0 = result
         return result
