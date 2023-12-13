@@ -6,28 +6,28 @@ class GlobalData:
     Stores general information like simulation time, conductivity, initial temperature, density etc.
     '''
     def __init__(self, globalDataDict: dict):
-        self.simulationTime = globalDataDict["SimulationTime"]
-        self.simulationStepTime = globalDataDict["SimulationStepTime"]
-        self.conductivity = globalDataDict["Conductivity"]
-        self.alfa = globalDataDict["Alfa"]
-        self.tot = globalDataDict["Tot"]
-        self.initialTemp = globalDataDict["InitialTemp"]
-        self.density = globalDataDict["Density"]
-        self.specificHeat = globalDataDict["SpecificHeat"]
-        self.nodesNumber = globalDataDict["Nodesnumber"]
-        self.elementsNumber = globalDataDict["Elementsnumber"]
+        self.simulationTime = globalDataDict['SimulationTime']
+        self.simulationStepTime = globalDataDict['SimulationStepTime']
+        self.conductivity = globalDataDict['Conductivity']
+        self.alfa = globalDataDict['Alfa']
+        self.tot = globalDataDict['Tot']
+        self.initialTemp = globalDataDict['InitialTemp']
+        self.density = globalDataDict['Density']
+        self.specificHeat = globalDataDict['SpecificHeat']
+        self.nodesNumber = globalDataDict['Nodesnumber']
+        self.elementsNumber = globalDataDict['Elementsnumber']
 
     def print(self) -> None:
-        print(f"Simulation time: \t{self.simulationTime}")
-        print(f"Simulation step time: \t{self.simulationStepTime}")
-        print(f"Conductivity: \t\t{self.conductivity}")
-        print(f"Alfa: \t\t\t{self.alfa}")
-        print(f"Tot: \t\t\t{self.tot}")
-        print(f"Initial temp: \t\t{self.initialTemp}")
-        print(f"Density: \t\t{self.density}")
-        print(f"Specific heat: \t\t{self.specificHeat}")
-        print(f"Nodes number: \t\t{self.nodesNumber}")
-        print(f"Elements number: \t{self.elementsNumber}")
+        print(f'Simulation time: \t{self.simulationTime}')
+        print(f'Simulation step time: \t{self.simulationStepTime}')
+        print(f'Conductivity: \t\t{self.conductivity}')
+        print(f'Alfa: \t\t\t{self.alfa}')
+        print(f'Tot: \t\t\t{self.tot}')
+        print(f'Initial temp: \t\t{self.initialTemp}')
+        print(f'Density: \t\t{self.density}')
+        print(f'Specific heat: \t\t{self.specificHeat}')
+        print(f'Nodes number: \t\t{self.nodesNumber}')
+        print(f'Elements number: \t{self.elementsNumber}')
 
 class Node:
     '''
@@ -45,7 +45,7 @@ class Node:
         self.BC = 0
 
     def print(self) -> None:
-        print(f"Node {self.id}: \t({self.x}, {self.y})")
+        print(f'Node {self.id}: \t({self.x}, {self.y})')
 
 class Element:
     '''
@@ -67,7 +67,7 @@ class Element:
         self.C = None
 
     def print(self) -> None:
-        print(f"Element {self.id}: \t{self.IDs}")
+        print(f'Element {self.id}: \t{self.IDs}')
 
 class Grid:
     '''
@@ -80,20 +80,23 @@ class Grid:
     '''
     def __init__(self, inputFile: str = None, globalData: GlobalData = None, elements: list[Element] = None, nodes: list[Node] = None):
         if inputFile is not None:
-            f = open(inputFile, "r")
-            fileContent = f.readlines()
-            self.globalData = self.readGlobalData(fileContent)
-            self.nodes = self.readNodes(fileContent, self.globalData.nodesNumber)
-            self.elements = self.readElements(fileContent, self.globalData.nodesNumber, self.globalData.elementsNumber)
-            self.BC = self.readBC(fileContent, self.globalData.nodesNumber, self.globalData.elementsNumber)
-            self.addBcToNode(self.BC)
-            f.close()
+            try:
+                f = open(inputFile, 'r')
+                fileContent = f.readlines()
+                self.globalData = self.readGlobalData(fileContent)
+                self.nodes = self.readNodes(fileContent, self.globalData.nodesNumber)
+                self.elements = self.readElements(fileContent, self.globalData.nodesNumber, self.globalData.elementsNumber)
+                self.BC = self.readBC(fileContent, self.globalData.nodesNumber, self.globalData.elementsNumber)
+                self.addBcToNode(self.BC)
+                f.close()
+            except Exception as e:
+                raise FiniteElementMethodException(f'Error while creating a Grid object. Check if your input file format is correct. Error:\n{e}')
         elif globalData is not None and elements is not None and nodes is not None:
             self.globalData = globalData
             self.nodes = nodes
             self.elements = elements
         else:
-            raise MyException("Not enough input data to create a grid")
+            raise FiniteElementMethodException('Error while creating a Grid object. Not enough input data to create a grid.')
 
     def readGlobalData(self, input: str) -> GlobalData:
         '''
@@ -102,13 +105,13 @@ class Grid:
         globalDataDict = {}
         for i in range (0, 8):
             line = input[i]
-            line = line.split(" ")
+            line = line.split(' ')
             for i in range (0, 2):
                 line[i] = line[i].strip()
             globalDataDict[line[0]] = int(line[1])
         for i in range (8, 10):
             line = input[i]
-            line = line.split(" ")
+            line = line.split(' ')
             for i in range (0, 3):
                 line[i] = line[i].strip()
             line[0] = line[0] + line[1]
@@ -121,7 +124,7 @@ class Grid:
         '''
         nodeList = []
         for i in range (11, 11 + nodesNumber):
-            line = input[i].split(", ")
+            line = input[i].split(', ')
             nodeList.append(Node(int(line[0]), float(line[1]), float(line[2])))
         return nodeList
 
@@ -132,7 +135,7 @@ class Grid:
         elements = []
         nodeIDs = []
         for i in range (11 + nodesNumber + 1, 11 + nodesNumber + 1 + elementsNumber):
-            line = input[i].split(", ")
+            line = input[i].split(', ')
             for i in range (1, len(line)):
                 nodeIDs.append(int(line[i]))
             elements.append(Element(int(line[0]), nodeIDs))
@@ -145,7 +148,7 @@ class Grid:
         '''
         nodeIDs = []
         line = input[11 + nodesNumber + 1 + elementsNumber + 1]
-        line = line.split(", ")
+        line = line.split(', ')
         for i in range(0, len(line)):
             nodeIDs.append(int(line[i]))
         return nodeIDs
@@ -159,10 +162,10 @@ class Grid:
     
     def print(self) -> None:
         self.globalData.print()
-        print("\nNodes:")
+        print('\nNodes:')
         for node in self.nodes:
             node.print()
-        print("\nElements:")
+        print('\nElements:')
         for element in self.elements:
             element.print()
-        print(f"\nBC:\n{self.BC}\n")
+        print(f'\nBC:\n{self.BC}\n')

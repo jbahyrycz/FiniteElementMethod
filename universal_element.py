@@ -1,6 +1,6 @@
-from numerical_integration import *
-from math import *
 from common import *
+from numerical_integration import GaussianQuadrature
+from math import *
 
 class UniversalElement(GaussianQuadrature):
     '''

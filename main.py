@@ -1,26 +1,20 @@
 from common import *
-from grid import *
-from numerical_integration import *
-from universal_element import *
-from local_matrices_calculation import *
-from system_of_equations import *
-from temperature_simulation import *
-
-gridsPath = os.path.join(scriptPath, "Data", "Grids")
+from grid import Grid, GlobalData, Element, Node
+from temperature_simulation import TemperatureSimulation
 
 # Creates 1-element grid for testing purposes
 def createTestGrid() -> Grid:
     globalDataDict = {}
-    globalDataDict["SimulationTime"] = 0
-    globalDataDict["SimulationStepTime"] = 0
-    globalDataDict["Conductivity"] = 30
-    globalDataDict["Alfa"] = 25
-    globalDataDict["Tot"] = 1200
-    globalDataDict["InitialTemp"] = 0
-    globalDataDict["Density"] = 7800
-    globalDataDict["SpecificHeat"] = 700
-    globalDataDict["Nodesnumber"] = 4
-    globalDataDict["Elementsnumber"] = 1
+    globalDataDict['SimulationTime'] = 0
+    globalDataDict['SimulationStepTime'] = 0
+    globalDataDict['Conductivity'] = 30
+    globalDataDict['Alfa'] = 25
+    globalDataDict['Tot'] = 1200
+    globalDataDict['InitialTemp'] = 0
+    globalDataDict['Density'] = 7800
+    globalDataDict['SpecificHeat'] = 700
+    globalDataDict['Nodesnumber'] = 4
+    globalDataDict['Elementsnumber'] = 1
     globalData = GlobalData(globalDataDict)
     nodes = [Node(1, 0, 0), Node(2, 0.025, 0), Node(3, 0.025, 0.025), Node(4, 0, 0.025)]
     for node in nodes:
@@ -31,14 +25,14 @@ def createTestGrid() -> Grid:
 
 def main():
     try:
-        gridFilepath1 = os.path.join(gridsPath, "Test1_4_4.txt")
-        gridFilepath2 = os.path.join(gridsPath, "Test2_4_4_MixGrid.txt")
-        gridFilepath3 = os.path.join(gridsPath, "Test3_31_31_kwadrat.txt")
+        gridFilepath1 = os.path.join(gridsPath, 'Test1_4_4.txt')
+        gridFilepath2 = os.path.join(gridsPath, 'Test2_4_4_MixGrid.txt')
+        gridFilepath3 = os.path.join(gridsPath, 'Test3_31_31_kwadrat.txt')
         #TemperatureSimulation.run(gridFilepath1)
         TemperatureSimulation.run(gridFilepath2)
         #TemperatureSimulation.run(gridFilepath3)
-    except MyException as e:
+    except FiniteElementMethodException as e:
         print(e)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

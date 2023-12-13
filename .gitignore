@@ -1,3 +1,4 @@
 Data/MaterialsFromClasses/
 __pycache__/
 *.vtk
+!temperatures.vtk

@@ -1,4 +1,5 @@
-from grid import *
+from common import *
+from grid import Grid
 import numpy as np
 from numpy import linalg
 from numpy._typing import NDArray

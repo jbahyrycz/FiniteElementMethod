@@ -1,12 +1,15 @@
-from grid import *
-import numpy as np
 from common import *
+from universal_element import UniversalElement, Surface
+from grid import Grid, GlobalData, Node
+from math import *
+import numpy as np
+
 class LocalMatricesCalculation():
     '''
     Abstract class for calculating of H, C, Hbc matrices and P vector for each element of the given grid.
     '''
     def __init__(self):
-        raise MyException("LocalMatricesCalculation is an abstract class, you cannot create an instance of this class.")
+        raise FiniteElementMethodException('LocalMatricesCalculation is an abstract class, you cannot create an instance of this class.')
     
     @staticmethod
     def calculate(n: int, grid: Grid) -> None:
@@ -20,7 +23,7 @@ class LocalMatricesCalculation():
                                       grid.nodes[element.IDs[2] - 1],
                                       grid.nodes[element.IDs[3] - 1]],
                                       uEl, grid.globalData)
-            #print(f"H:\n{element.H}\nC:{element.C}\nHbc:\n{element.Hbc}\nP:\n{element.P}")
+            #print(f'H:\n{element.H}\nC:{element.C}\nHbc:\n{element.Hbc}\nP:\n{element.P}')
 
     @staticmethod
     def calculateForElement(nodes: list[Node], uEl: UniversalElement, glData: GlobalData) -> None:
@@ -60,7 +63,7 @@ class LocalMatricesCalculation():
         for i in range(0, 4):
             xCoords.append(nodes[i].x)
             yCoords.append(nodes[i].y)
-        #print(f"xCoords: {xCoords}\nyCoords: {yCoords}")
+        #print(f'xCoords: {xCoords}\nyCoords: {yCoords}')
         return xCoords, yCoords
     
     @staticmethod
@@ -74,7 +77,7 @@ class LocalMatricesCalculation():
             dXdEtaTab.append(LocalMatricesCalculation.dEta(uEl.dNdEtaTab[i][0], uEl.dNdEtaTab[i][1], uEl.dNdEtaTab[i][2], uEl.dNdEtaTab[i][3], xCoords))
             dYdKsiTab.append(LocalMatricesCalculation.dKsi(uEl.dNdKsiTab[i][0], uEl.dNdKsiTab[i][1], uEl.dNdKsiTab[i][2], uEl.dNdKsiTab[i][3], yCoords))
             dYdEtaTab.append(LocalMatricesCalculation.dKsi(uEl.dNdEtaTab[i][0], uEl.dNdEtaTab[i][1], uEl.dNdEtaTab[i][2], uEl.dNdEtaTab[i][3], yCoords))
-        #print(f"dXdKsiTab: {dXdKsiTab}\ndXdEtaTab: {dXdEtaTab}\ndYdKsiTab: {dYdKsiTab}\ndYdEtaTab: {dYdEtaTab}")
+        #print(f'dXdKsiTab: {dXdKsiTab}\ndXdEtaTab: {dXdEtaTab}\ndYdKsiTab: {dYdKsiTab}\ndYdEtaTab: {dYdEtaTab}')
         return dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab
     
     @staticmethod
@@ -90,9 +93,9 @@ class LocalMatricesCalculation():
         for j in range(uEl.n*uEl.n):
             mxJ = np.array([[dXdKsiTab[j], dYdKsiTab[j]],
                              [dXdEtaTab[j], dYdEtaTab[j]]])
-            #print(f"Jacobian matrix:\n{mxJ}")
+            #print(f'Jacobian matrix:\n{mxJ}')
             detJ = np.linalg.det(mxJ)
-            #print(f"Jacobian determinant:\n{detJ}")
+            #print(f'Jacobian determinant:\n{detJ}')
             detTab.append(detJ)
             mx1 = np.array([[dYdEtaTab[j], -dYdKsiTab[j]],
                              [-dXdEtaTab[j], dXdKsiTab[j]]])
@@ -102,9 +105,9 @@ class LocalMatricesCalculation():
                 mxOutput = np.matmul(((1/detJ)*mx1), mx2)
                 dNdXTab[j][i] = mxOutput[0][0]
                 dNdYTab[j][i] = mxOutput[1][0]
-        #print("dNdXTab:")
+        #print('dNdXTab:')
         #print2dTab(dNdXTab)
-        #print("dNdYTab:")
+        #print('dNdYTab:')
         #print2dTab(dNdYTab)
         return dNdXTab, dNdYTab, detTab
     
@@ -123,7 +126,7 @@ class LocalMatricesCalculation():
         return dNdXTab, dNdYTab
 
     @staticmethod
-    def calculateForIntegrationPoints(dNdXTab: list, dNdYTab: list, NTab: list, detTab: list, n: int, k: int, ro: int, c: int) -> list[np.ndarray]:
+    def calculateForIntegrationPoints(dNdXTab: list, dNdYTab: list, NTab: list, detTab: list, n: int, c: int, d: int, sH: int) -> list[np.ndarray]:
         '''
         Calculates H, C matrices for each integration point. Returns list of matrices.
         '''
@@ -142,9 +145,9 @@ class LocalMatricesCalculation():
                              [NTab[i][1]],
                              [NTab[i][2]],
                              [NTab[i][3]]])
-            ipMxH = k*(np.matmul(mxDNdX, mxDNdX.transpose()) + np.matmul(mxDNdY, mxDNdY.transpose()))*detTab[i]
-            ipMxC = c*ro*(np.matmul(mxN, mxN.transpose()))*detTab[i]
-            #print(f"IP {i+1}:\n{ipMxH}")
+            ipMxH = c*(np.matmul(mxDNdX, mxDNdX.transpose()) + np.matmul(mxDNdY, mxDNdY.transpose()))*detTab[i]
+            ipMxC = sH*d*(np.matmul(mxN, mxN.transpose()))*detTab[i]
+            #print(f'IP {i+1}:\n{ipMxH}')
             mxHTab.append(ipMxH)
             mxCTab.append(ipMxC)
         return mxHTab, mxCTab
