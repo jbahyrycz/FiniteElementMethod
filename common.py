@@ -1,3 +1,7 @@
+import os
+
+scriptPath = os.getcwd()
+
 class MyException(Exception):
     pass
 

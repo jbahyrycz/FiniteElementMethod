@@ -1,4 +1,4 @@
-import os
+from common import *
 from grid import *
 from numerical_integration import *
 from universal_element import *
@@ -6,7 +6,6 @@ from local_matrices_calculation import *
 from system_of_equations import *
 from temperature_simulation import *
 
-scriptPath = os.getcwd()
 gridsPath = os.path.join(scriptPath, "Data", "Grids")
 
 # Creates 1-element grid for testing purposes
@@ -35,9 +34,9 @@ def main():
         gridFilepath1 = os.path.join(gridsPath, "Test1_4_4.txt")
         gridFilepath2 = os.path.join(gridsPath, "Test2_4_4_MixGrid.txt")
         gridFilepath3 = os.path.join(gridsPath, "Test3_31_31_kwadrat.txt")
-        TemperatureSimulation.run(gridFilepath1)
+        #TemperatureSimulation.run(gridFilepath1)
         TemperatureSimulation.run(gridFilepath2)
-        TemperatureSimulation.run(gridFilepath3)
+        #TemperatureSimulation.run(gridFilepath3)
     except MyException as e:
         print(e)
 

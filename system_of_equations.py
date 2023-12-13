@@ -18,20 +18,29 @@ class SystemOfEquations():
     def __init__(self, grid: Grid):
         self.dim = grid.globalData.nodesNumber
         self.t0 = np.zeros((self.dim, 1))
-        self.step = grid.globalData.simulationStepTime
+        self.step = self.findStep(grid)
         self.dTau = 0
         self.H = np.zeros((self.dim, self.dim))
         self.P = np.zeros((self.dim, 1))
         self.C = np.zeros((self.dim, self.dim))
-        self.fillT(self.dim, grid.globalData.initialTemp)
+        self.fillT(grid)
         self.aggregateHAndC(grid)
         self.aggreagteP(grid)
 
-    def fillT(self, dim: int, t0: float) -> None:
+    def findStep(self, grid: Grid) -> float:
+        '''
+        Method in development, doesn't do anything yet!!!
+        '''
+        glDataStep = grid.globalData.simulationStepTime
+        calculatedStep = 1000000
+        return min(glDataStep, calculatedStep)
+
+    def fillT(self, grid: Grid) -> None:
         '''
         Creates vector filled with initial temperature data.
         '''
-        for i in range(0, dim):
+        t0 = grid.globalData.initialTemp
+        for i in range(0, self.dim):
             self.t0[i] = t0
 
     def aggregateHAndC(self, grid: Grid) -> None:
@@ -61,7 +70,7 @@ class SystemOfEquations():
         H[0] + C[0]/dTau * t1[0] = C[0]/dTau * t0[0] + P[0]
         H[1] + C[1]/dTau * t1[1] = C[1]/dTau * t0[1] + P[1]
         ...
-        H[n] + C[n]/dTau * t1[n]] = C[n]/dTau * t0[n] + P[n]
+        H[n] + C[n]/dTau * t1[n] = C[n]/dTau * t0[n] + P[n]
         '''
         self.dTau += self.step
         H = self.H + self.C/(self.step)
