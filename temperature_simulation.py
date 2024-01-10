@@ -8,7 +8,7 @@ class TemperatureSimulation:
         raise FiniteElementMethodException('TemperatureSimulation is an abstract class, you cannot create an instance of this class.')
     
     @staticmethod
-    def generateVtkFiles(inputFile: str, grid: Grid, temperatures: list) -> None:
+    def generateVtkFiles(inputFilename: str, grid: Grid, temperatures: list) -> None:
         '''
         Creates files for simulation in ParaView environment.
         '''
@@ -24,9 +24,8 @@ class TemperatureSimulation:
         data['elements'] = grid.elements
         data['elementNodesNumber'] = elementNodesNumber
         data['sumOfElementsData'] = grid.globalData.elementsNumber + sum(elementNodesNumber)
-        destinationDir = os.path.join(outputPath, os.path.basename(inputFile).split('.')[0])
-
-        createOrClearDirectory(destinationDir)
+        
+        destinationDir = createOrClearDirectory(inputFilename)
         template = initializeJinjaEnvironment('temperatures.vtk')
         for i in range(0, numOfFiles):
             data['temperatures'] = temperatures[i]

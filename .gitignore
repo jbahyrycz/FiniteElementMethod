@@ -1,4 +1,3 @@
 Data/MaterialsFromClasses/
+Data/Output/
 __pycache__/
-*.vtk
-!Templates
