@@ -4,7 +4,7 @@ from grid import Grid, GlobalData, Node
 from math import *
 import numpy as np
 
-class LocalMatricesCalculation():
+class LocalMatricesCalculation:
     '''
     Abstract class for calculating of H, C, Hbc matrices and P vector for each element of the given grid.
     '''
@@ -32,7 +32,7 @@ class LocalMatricesCalculation():
         '''
         xCoords, yCoords = LocalMatricesCalculation.fillXYCoords(nodes)
         dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab = LocalMatricesCalculation.fillXYKsiEtaTabs(xCoords, yCoords, uEl)
-        dNdXTab, dNdYTab, detTab = LocalMatricesCalculation.fillDNdXdNdYTabs(dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab, uEl)
+        dNdXTab, dNdYTab, detTab = LocalMatricesCalculation.dNdXdNdY(dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab, uEl)
         ipHMatrices, ipCMatrices = LocalMatricesCalculation.calculateForIntegrationPoints(dNdXTab, dNdYTab, uEl.NTab, detTab, uEl.n, glData.conductivity, glData.density, glData.specificHeat)
         
         H = np.zeros((4, 4))
@@ -55,7 +55,7 @@ class LocalMatricesCalculation():
         return H, C, Hbc, P
     
     @staticmethod
-    def fillXYCoords(nodes: list[Node]) -> tuple[float]:
+    def fillXYCoords(nodes: list[Node]) -> tuple[list[float]]:
         '''
         Fills lists storing x and y coords of nodes belonging to the element.
         '''
@@ -81,14 +81,14 @@ class LocalMatricesCalculation():
         return dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab
     
     @staticmethod
-    def fillDNdXdNdYTabs(dXdKsiTab: list, dXdEtaTab: list, dYdKsiTab: list, dYdEtaTab: list, uEl: UniversalElement) -> tuple[list[float]]:
+    def dNdXdNdY(dXdKsiTab: list, dXdEtaTab: list, dYdKsiTab: list, dYdEtaTab: list, uEl: UniversalElement) -> tuple[list[float]]:
         '''
         Fills dN/dx and dN/dy tables and calculates Jacobian and det[J].
 
         mxJ: Jacobian matrix
         detJ: Jacobian determinant
         '''
-        dNdXTab, dNdYTab = LocalMatricesCalculation.initializeDNdXdNdYTabs(uEl.n)
+        dNdXTab, dNdYTab = LocalMatricesCalculation.initialize_dNdXdNdY(uEl.n)
         detTab = []
         for j in range(uEl.n*uEl.n):
             mxJ = np.array([[dXdKsiTab[j], dYdKsiTab[j]],
@@ -112,7 +112,7 @@ class LocalMatricesCalculation():
         return dNdXTab, dNdYTab, detTab
     
     @staticmethod
-    def initializeDNdXdNdYTabs(n: int) -> tuple[list[list]]:
+    def initialize_dNdXdNdY(n: int) -> tuple[list[list]]:
         '''
         Initializes empty tables for dN/dx and dN/dy calculations.
         '''
@@ -126,7 +126,7 @@ class LocalMatricesCalculation():
         return dNdXTab, dNdYTab
 
     @staticmethod
-    def calculateForIntegrationPoints(dNdXTab: list, dNdYTab: list, NTab: list, detTab: list, n: int, c: int, d: int, sH: int) -> list[np.ndarray]:
+    def calculateForIntegrationPoints(dNdXTab: list, dNdYTab: list, NTab: list, detTab: list, n: int, c: int, d: int, sH: int) -> tuple[np.ndarray]:
         '''
         Calculates H, C matrices for each integration point. Returns list of matrices.
         '''
@@ -179,7 +179,7 @@ class LocalMatricesCalculation():
                      dN2dKsi: float,
                      dN3dKsi: float,
                      dN4dKsi: float,
-                     var: float) -> float:
+                     var: list[float]) -> float:
         '''
         Returns dx/dksi or dy/dksi depending on the argument given.
         '''

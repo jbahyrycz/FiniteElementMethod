@@ -1,6 +1,7 @@
 from common import *
 from grid import Grid, GlobalData, Element, Node
 from temperature_simulation import TemperatureSimulation
+from universal_element import *
 
 # Creates 1-element grid for testing purposes
 def createTestGrid() -> Grid:
@@ -28,9 +29,11 @@ def main():
         gridFilepath1 = os.path.join(gridsPath, 'Test1_4_4.txt')
         gridFilepath2 = os.path.join(gridsPath, 'Test2_4_4_MixGrid.txt')
         gridFilepath3 = os.path.join(gridsPath, 'Test3_31_31_kwadrat.txt')
-        #TemperatureSimulation.run(gridFilepath1)
+        gridFilepath4 = os.path.join(gridsPath, 'Test4_31_31_trapez.txt')
+        TemperatureSimulation.run(gridFilepath1)
         TemperatureSimulation.run(gridFilepath2)
-        #TemperatureSimulation.run(gridFilepath3)
+        TemperatureSimulation.run(gridFilepath3)
+        TemperatureSimulation.run(gridFilepath4)
     except FiniteElementMethodException as e:
         print(e)
 

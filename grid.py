@@ -1,5 +1,8 @@
 from common import *
 from universal_element import *
+import numpy as np
+
+#test
 
 class GlobalData:
     '''
@@ -55,19 +58,19 @@ class Element:
     IDs:        IDs od nodes belonging to the element
     H:          H matrix for the element (4x4)
     Hbc:        Hbc matrix for the element (4x4)
-    P:          P vector for the element (1X4)
+    P:          P vector for the element (4X1)
     C:          C matrix for the element (4x4)
     '''
-    def __init__(self, id: int, IDs: list[int]):
-        self.id = id
+    def __init__(self, ID: int, IDs: list[int]):
+        self.ID = ID
         self.IDs = IDs
-        self.H = None
-        self.Hbc = None
-        self.P = None
-        self.C = None
+        self.H = np.zeros((4, 4))
+        self.Hbc = np.zeros((4, 4))
+        self.P = np.zeros((4, 1))
+        self.C = np.zeros((4, 4))
 
     def print(self) -> None:
-        print(f'Element {self.id}: \t{self.IDs}')
+        print(f'Element {self.ID}: \t{self.IDs}')
 
 class Grid:
     '''

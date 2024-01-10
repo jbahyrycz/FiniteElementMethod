@@ -4,7 +4,7 @@ import numpy as np
 from numpy import linalg
 from numpy._typing import NDArray
 
-class SystemOfEquations():
+class SystemOfEquations:
     '''
     Class for calculating temperature in each node of the grid by creating and solving a system of equations.
 
@@ -19,7 +19,7 @@ class SystemOfEquations():
     def __init__(self, grid: Grid):
         self.dim = grid.globalData.nodesNumber
         self.t0 = np.zeros((self.dim, 1))
-        self.step = self.findStep(grid)
+        self.step = grid.globalData.simulationStepTime
         self.dTau = 0
         self.H = np.zeros((self.dim, self.dim))
         self.P = np.zeros((self.dim, 1))
@@ -27,14 +27,6 @@ class SystemOfEquations():
         self.fillT(grid)
         self.aggregateHAndC(grid)
         self.aggreagteP(grid)
-
-    def findStep(self, grid: Grid) -> float:
-        '''
-        Method in development, doesn't do anything yet!!!
-        '''
-        glDataStep = grid.globalData.simulationStepTime
-        calculatedStep = 1000000
-        return min(glDataStep, calculatedStep)
 
     def fillT(self, grid: Grid) -> None:
         '''
@@ -68,6 +60,7 @@ class SystemOfEquations():
     def solve(self) -> NDArray:
         '''
         Solves system of equations for calculating temperature in each node at any given time.
+
         H[0] + C[0]/dTau * t1[0] = C[0]/dTau * t0[0] + P[0]
         H[1] + C[1]/dTau * t1[1] = C[1]/dTau * t0[1] + P[1]
         ...

@@ -1,10 +1,9 @@
 from common import *
-import shutil
 from grid import Grid
 from local_matrices_calculation import LocalMatricesCalculation
 from system_of_equations import SystemOfEquations
 
-class TemperatureSimulation():
+class TemperatureSimulation:
     def __init__(self):
         raise FiniteElementMethodException('TemperatureSimulation is an abstract class, you cannot create an instance of this class.')
     
@@ -13,7 +12,6 @@ class TemperatureSimulation():
         '''
         Creates files for simulation in ParaView environment.
         '''
-
         numOfFiles = len(temperatures)
         elementNodesNumber = []
         for element in grid.elements:
@@ -44,7 +42,7 @@ class TemperatureSimulation():
         temperatures = []
         print(os.path.basename(inputFile))
         grid = Grid(inputFile)
-        LocalMatricesCalculation.calculate(3, grid)
+        LocalMatricesCalculation.calculate(2, grid)
         soe = SystemOfEquations(grid)
         tau0 = 0
         tauK = grid.globalData.simulationTime

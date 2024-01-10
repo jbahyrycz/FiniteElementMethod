@@ -5,9 +5,11 @@ from math import *
 class UniversalElement(GaussianQuadrature):
     '''
     Contains all the calculations that are universal for every 4-node element.
+    
     dNdKsiTab:      table of dN/dKsi results for N1, N2, N3, N4 in integration points (n^2x4)
     dNdEtaTab:      table of dN/dEta results for N1, N2, N3, N4 in integration points (n^2x4)
-    surfaces:       table of Surface type elements, necessary for calculations that take border conditions into account
+    NTab:           table of N(ksi, eta) values for N1, N2, N3, N4 in integration points (nx4)
+    surfaces:       list of Surface type elements, necessary for calculations that take border conditions into account
     '''
     def __init__(self, n):
         super().__init__(n, None)
