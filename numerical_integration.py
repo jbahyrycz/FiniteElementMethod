@@ -12,9 +12,9 @@ class GaussianQuadrature:
     '''
     def __init__(self, n: int, fun):
         self.fun = fun
-        self.n = n
-        self.points = []
-        self.weights = []
+        self.n: int = n
+        self.points: list[float] = []
+        self.weights: list[float] = []
         self.initPointsAndWeights()
 
     def initPointsAndWeights(self) -> None:
@@ -77,21 +77,21 @@ class GaussianQuadrature:
             case _:
                 raise FiniteElementMethodException('Number of nodes in numerical integration (n) must be an integer in range (1;5).')      
 
-    def calculate1d(self) -> float:
+    def calculateIntegral1d(self) -> float:
         '''
         Calculates integral for function of 1 variable f(x).
         '''
-        result = 0
+        result = 0.0
         for i in range (0, self.n):
             x = self.points[i]
             result += self.weights[i] * self.fun(x)
         return result
     
-    def calculate2d(self) -> float:
+    def calculateIntegral2d(self) -> float:
         '''
         Calculates integral for function of 2 variables f(x, y).
         '''
-        result = 0
+        result = 0.0
         for i in range (0, self.n):
             x = self.points[i]
             for j in range (self.n):

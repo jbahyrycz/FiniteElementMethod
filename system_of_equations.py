@@ -2,7 +2,6 @@ from common import *
 from grid import Grid
 import numpy as np
 from numpy import linalg
-from numpy._typing import NDArray
 
 class SystemOfEquations:
     '''
@@ -17,26 +16,17 @@ class SystemOfEquations:
     dim:    dimensions of H matrix and P vector 
     '''
     def __init__(self, grid: Grid):
-        self.dim = grid.globalData.nodesNumber
-        self.t0 = np.zeros((self.dim, 1))
-        self.step = grid.globalData.simulationStepTime
-        self.dTau = 0
-        self.H = np.zeros((self.dim, self.dim))
-        self.P = np.zeros((self.dim, 1))
-        self.C = np.zeros((self.dim, self.dim))
-        self.fillT(grid)
-        self.aggregateHAndC(grid)
-        self.aggreagteP(grid)
+        self.dim: int = grid.globalData.nodesNumber
+        self.t0: np.ndarray = np.full((self.dim, 1), grid.globalData.initialTemp)
+        self.step: float = grid.globalData.simulationStepTime
+        self.dTau: float = 0.0
+        self.H: np.ndarray = np.zeros((self.dim, self.dim))
+        self.P: np.ndarray = np.zeros((self.dim, 1))
+        self.C: np.ndarray = np.zeros((self.dim, self.dim))
+        self._aggregateHAndC(grid)
+        self._aggreagteP(grid)
 
-    def fillT(self, grid: Grid) -> None:
-        '''
-        Creates vector filled with initial temperature data.
-        '''
-        t0 = grid.globalData.initialTemp
-        for i in range(0, self.dim):
-            self.t0[i] = t0
-
-    def aggregateHAndC(self, grid: Grid) -> None:
+    def _aggregateHAndC(self, grid: Grid) -> None:
         '''
         Creates global H and C matrices.
         '''
@@ -44,20 +34,20 @@ class SystemOfEquations:
             localH = element.H + element.Hbc
             for j in range(0, 4):
                 for i in range(0, 4):
-                    self.H[element.IDs[j] - 1][element.IDs[i] - 1] += localH[j][i]
-                    self.C[element.IDs[j] - 1][element.IDs[i] - 1] += element.C[j][i]
+                    self.H[element.nodeIds[j] - 1][element.nodeIds[i] - 1] += localH[j][i]
+                    self.C[element.nodeIds[j] - 1][element.nodeIds[i] - 1] += element.C[j][i]
         #print(f"Global H:\n{self.H}\nGlobal C:{self.C}")
 
-    def aggreagteP(self, grid: Grid) -> None:
+    def _aggreagteP(self, grid: Grid) -> None:
         '''
         Creates global P vector from local (per element) P vectors.
         '''
         for element in grid.elements:
             for i in range(0, 4):
-                self.P[element.IDs[i] - 1] += element.P[i]
+                self.P[element.nodeIds[i] - 1] += element.P[i]
         #print(f"Global P:\n{self.P}")
 
-    def solve(self) -> NDArray:
+    def solve(self) -> np.ndarray:
         '''
         Solves system of equations for calculating temperature in each node at any given time.
 
@@ -69,6 +59,6 @@ class SystemOfEquations:
         self.dTau += self.step
         H = self.H + self.C/(self.step)
         P = self.P + np.matmul(self.C/(self.step), self.t0)
-        result = linalg.solve(H, P)
+        result: np.ndarray = linalg.solve(H, P)
         self.t0 = result
         return result

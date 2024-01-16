@@ -1,15 +1,15 @@
 import os
 from jinja2 import Environment, FileSystemLoader, Template
 
-scriptPath = os.getcwd()
-gridsPath = os.path.join(scriptPath, 'Data', 'Grids')
-outputPath = os.path.join(scriptPath, 'Data', 'Output')
-templatesPath = os.path.join(scriptPath, 'Data', 'Templates')
+scriptPath: str = os.getcwd()
+gridsPath: str = os.path.join(scriptPath, 'Data', 'Grids')
+outputPath: str = os.path.join(scriptPath, 'Data', 'Output')
+templatesPath: str = os.path.join(scriptPath, 'Data', 'Templates')
 
 class FiniteElementMethodException(Exception):
     pass
 
-def createOrClearDirectory(inputFilename: str):
+def createOrClearDirectory(inputFilename: str) -> str:
     try:
         os.mkdir(outputPath)
     except FileExistsError:

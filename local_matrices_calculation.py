@@ -18,22 +18,22 @@ class LocalMatricesCalculation:
         '''
         uEl = UniversalElement(n)
         for element in grid.elements:
-            element.H, element.C, element.Hbc, element.P = LocalMatricesCalculation.calculateForElement([grid.nodes[element.IDs[0] - 1],
-                                      grid.nodes[element.IDs[1] - 1],
-                                      grid.nodes[element.IDs[2] - 1],
-                                      grid.nodes[element.IDs[3] - 1]],
+            element.H, element.C, element.Hbc, element.P = LocalMatricesCalculation._calculateForElement([grid.nodes[element.nodeIds[0] - 1],
+                                      grid.nodes[element.nodeIds[1] - 1],
+                                      grid.nodes[element.nodeIds[2] - 1],
+                                      grid.nodes[element.nodeIds[3] - 1]],
                                       uEl, grid.globalData)
             #print(f'H:\n{element.H}\nC:{element.C}\nHbc:\n{element.Hbc}\nP:\n{element.P}')
 
     @staticmethod
-    def calculateForElement(nodes: list[Node], uEl: UniversalElement, glData: GlobalData) -> None:
+    def _calculateForElement(nodes: list[Node], uEl: UniversalElement, glData: GlobalData) -> None:
         '''
         Calculates H, C, Hbc marices and P vector for the element.
         '''
-        xCoords, yCoords = LocalMatricesCalculation.fillXYCoords(nodes)
-        dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab = LocalMatricesCalculation.fillXYKsiEtaTabs(xCoords, yCoords, uEl)
-        dNdXTab, dNdYTab, detTab = LocalMatricesCalculation.dNdXdNdY(dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab, uEl)
-        ipHMatrices, ipCMatrices = LocalMatricesCalculation.calculateForIntegrationPoints(dNdXTab, dNdYTab, uEl.NTab, detTab, uEl.n, glData.conductivity, glData.density, glData.specificHeat)
+        xCoords, yCoords = LocalMatricesCalculation._fillXYCoords(nodes)
+        dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab = LocalMatricesCalculation._fillXYKsiEtaTabs(xCoords, yCoords, uEl)
+        dNdXTab, dNdYTab, detTab = LocalMatricesCalculation._dNdXdNdY(dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab, uEl)
+        ipHMatrices, ipCMatrices = LocalMatricesCalculation._calculateForIntegrationPoints(dNdXTab, dNdYTab, uEl.NTab, detTab, uEl.n, glData.conductivity, glData.density, glData.specificHeat)
         
         H = np.zeros((4, 4))
         C = np.zeros((4, 4))
@@ -45,17 +45,17 @@ class LocalMatricesCalculation:
             C += ipCMatrices[i]*(uEl.weights[i//uEl.n])*(uEl.weights[i%uEl.n])
 
         tempList = []
-        tempList.append(LocalMatricesCalculation.calculateForSurface(uEl.surfaces[0], (nodes[0], nodes[1]), uEl.weights, uEl.n, glData.alfa, glData.tot))
-        tempList.append(LocalMatricesCalculation.calculateForSurface(uEl.surfaces[1], (nodes[1], nodes[2]), uEl.weights, uEl.n, glData.alfa, glData.tot))
-        tempList.append(LocalMatricesCalculation.calculateForSurface(uEl.surfaces[2], (nodes[2], nodes[3]), uEl.weights, uEl.n, glData.alfa, glData.tot))
-        tempList.append(LocalMatricesCalculation.calculateForSurface(uEl.surfaces[3], (nodes[3], nodes[0]), uEl.weights, uEl.n, glData.alfa, glData.tot))
+        tempList.append(LocalMatricesCalculation._calculateForSurface(uEl.surfaces[0], (nodes[0], nodes[1]), uEl.weights, uEl.n, glData.alfa, glData.tot))
+        tempList.append(LocalMatricesCalculation._calculateForSurface(uEl.surfaces[1], (nodes[1], nodes[2]), uEl.weights, uEl.n, glData.alfa, glData.tot))
+        tempList.append(LocalMatricesCalculation._calculateForSurface(uEl.surfaces[2], (nodes[2], nodes[3]), uEl.weights, uEl.n, glData.alfa, glData.tot))
+        tempList.append(LocalMatricesCalculation._calculateForSurface(uEl.surfaces[3], (nodes[3], nodes[0]), uEl.weights, uEl.n, glData.alfa, glData.tot))
         for surfaceHbc, surfaceP in tempList:
             Hbc+=surfaceHbc
             P+=surfaceP
         return H, C, Hbc, P
     
     @staticmethod
-    def fillXYCoords(nodes: list[Node]) -> tuple[list[float]]:
+    def _fillXYCoords(nodes: list[Node]) -> tuple[list[float]]:
         '''
         Fills lists storing x and y coords of nodes belonging to the element.
         '''
@@ -67,28 +67,41 @@ class LocalMatricesCalculation:
         return xCoords, yCoords
     
     @staticmethod
-    def fillXYKsiEtaTabs(xCoords: list[float], yCoords: list[float], uEl: UniversalElement) -> tuple[list[float]]:
+    def _fillXYKsiEtaTabs(xCoords: list[float], yCoords: list[float], uEl: UniversalElement) -> tuple[list[float]]:
         '''
         Calculates dx/dksi, dx/deta, dy/dksi, dy/deta for every integration point and returns 4 tables with output.
         '''
         dXdKsiTab = []; dXdEtaTab = []; dYdKsiTab = []; dYdEtaTab = []
         for i in range(0, uEl.n*uEl.n):
-            dXdKsiTab.append(LocalMatricesCalculation.dKsi(uEl.dNdKsiTab[i][0], uEl.dNdKsiTab[i][1], uEl.dNdKsiTab[i][2], uEl.dNdKsiTab[i][3], xCoords))
-            dXdEtaTab.append(LocalMatricesCalculation.dEta(uEl.dNdEtaTab[i][0], uEl.dNdEtaTab[i][1], uEl.dNdEtaTab[i][2], uEl.dNdEtaTab[i][3], xCoords))
-            dYdKsiTab.append(LocalMatricesCalculation.dKsi(uEl.dNdKsiTab[i][0], uEl.dNdKsiTab[i][1], uEl.dNdKsiTab[i][2], uEl.dNdKsiTab[i][3], yCoords))
-            dYdEtaTab.append(LocalMatricesCalculation.dKsi(uEl.dNdEtaTab[i][0], uEl.dNdEtaTab[i][1], uEl.dNdEtaTab[i][2], uEl.dNdEtaTab[i][3], yCoords))
+            dXdKsiTab.append(LocalMatricesCalculation._interpolate(uEl.dNdKsiTab[i][0], uEl.dNdKsiTab[i][1], uEl.dNdKsiTab[i][2], uEl.dNdKsiTab[i][3], xCoords))
+            dXdEtaTab.append(LocalMatricesCalculation._interpolate(uEl.dNdEtaTab[i][0], uEl.dNdEtaTab[i][1], uEl.dNdEtaTab[i][2], uEl.dNdEtaTab[i][3], xCoords))
+            dYdKsiTab.append(LocalMatricesCalculation._interpolate(uEl.dNdKsiTab[i][0], uEl.dNdKsiTab[i][1], uEl.dNdKsiTab[i][2], uEl.dNdKsiTab[i][3], yCoords))
+            dYdEtaTab.append(LocalMatricesCalculation._interpolate(uEl.dNdEtaTab[i][0], uEl.dNdEtaTab[i][1], uEl.dNdEtaTab[i][2], uEl.dNdEtaTab[i][3], yCoords))
         #print(f'dXdKsiTab: {dXdKsiTab}\ndXdEtaTab: {dXdEtaTab}\ndYdKsiTab: {dYdKsiTab}\ndYdEtaTab: {dYdEtaTab}')
         return dXdKsiTab, dXdEtaTab, dYdKsiTab, dYdEtaTab
     
     @staticmethod
-    def dNdXdNdY(dXdKsiTab: list, dXdEtaTab: list, dYdKsiTab: list, dYdEtaTab: list, uEl: UniversalElement) -> tuple[list[float]]:
+    def _dNdXdNdY(dXdKsiTab: list, dXdEtaTab: list, dYdKsiTab: list, dYdEtaTab: list, uEl: UniversalElement) -> tuple[list[float]]:
         '''
         Fills dN/dx and dN/dy tables and calculates Jacobian and det[J].
 
         mxJ: Jacobian matrix
         detJ: Jacobian determinant
         '''
-        dNdXTab, dNdYTab = LocalMatricesCalculation.initialize_dNdXdNdY(uEl.n)
+        def initialize_dNdXdNdY(n: int) -> tuple[list[list]]:
+            '''
+            Initializes empty tables for dN/dx and dN/dy calculations.
+            '''
+            dNdXTab = []; dNdYTab = []
+            for j in range(n*n):
+                dNdXTab.append([])
+                dNdYTab.append([])
+                for i in range (0, 4):
+                    dNdXTab[j].append(0)
+                    dNdYTab[j].append(0)
+            return dNdXTab, dNdYTab
+    
+        dNdXTab, dNdYTab = initialize_dNdXdNdY(uEl.n)
         detTab = []
         for j in range(uEl.n*uEl.n):
             mxJ = np.array([[dXdKsiTab[j], dYdKsiTab[j]],
@@ -110,23 +123,9 @@ class LocalMatricesCalculation:
         #print('dNdYTab:')
         #print2dTab(dNdYTab)
         return dNdXTab, dNdYTab, detTab
-    
-    @staticmethod
-    def initialize_dNdXdNdY(n: int) -> tuple[list[list]]:
-        '''
-        Initializes empty tables for dN/dx and dN/dy calculations.
-        '''
-        dNdXTab = []; dNdYTab = []
-        for j in range(n*n):
-            dNdXTab.append([])
-            dNdYTab.append([])
-            for i in range (0, 4):
-                dNdXTab[j].append(0)
-                dNdYTab[j].append(0)
-        return dNdXTab, dNdYTab
 
     @staticmethod
-    def calculateForIntegrationPoints(dNdXTab: list, dNdYTab: list, NTab: list, detTab: list, n: int, c: int, d: int, sH: int) -> tuple[np.ndarray]:
+    def _calculateForIntegrationPoints(dNdXTab: list, dNdYTab: list, NTab: list, detTab: list, n: int, c: int, d: int, sH: int) -> tuple[np.ndarray]:
         '''
         Calculates H, C matrices for each integration point. Returns list of matrices.
         '''
@@ -153,7 +152,7 @@ class LocalMatricesCalculation:
         return mxHTab, mxCTab
     
     @staticmethod
-    def calculateForSurface(surface: Surface, nodes: tuple[Node], weights: list[float], n: int, alfa: int, tot: int) -> tuple:
+    def _calculateForSurface(surface: Surface, nodes: tuple[Node], weights: list[float], n: int, alfa: int, tot: int) -> tuple:
         '''
         Calculates Hbc matrix and P vector for the given surface of the element.
         '''
@@ -173,25 +172,10 @@ class LocalMatricesCalculation:
         Hbc = Hbc*alfa*detJ
         P = P*alfa*tot*detJ
         return Hbc, P
-
+    
     @staticmethod
-    def dKsi(dN1dKsi: float,
-                     dN2dKsi: float,
-                     dN3dKsi: float,
-                     dN4dKsi: float,
-                     var: list[float]) -> float:
+    def _interpolate(dN1: float, dN2: float, dN3: float, dN4: float, var: list[float]) -> float:
         '''
-        Returns dx/dksi or dy/dksi depending on the argument given.
+        Returns dx/deta, dx/dksi, dy/deta or dy/dksi depending on given arguments.
         '''
-        return dN1dKsi*var[0] + dN2dKsi*var[1] + dN3dKsi*var[2] + dN4dKsi*var[3]
-
-    @staticmethod
-    def dEta(dN1dEta: float,
-                     dN2dEta: float,
-                     dN3dEta: float,
-                     dN4dEta: float,
-                     var: float) -> float:
-        '''
-        Returns dx/deta or dy/deta depending on the argument given.
-        '''
-        return dN1dEta*var[0] + dN2dEta*var[1] + dN3dEta*var[2] + dN4dEta*var[3]
+        return dN1*var[0] + dN2*var[1] + dN3*var[2] + dN4*var[3]

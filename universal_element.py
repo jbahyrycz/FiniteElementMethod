@@ -13,57 +13,63 @@ class UniversalElement(GaussianQuadrature):
     '''
     def __init__(self, n):
         super().__init__(n, None)
-        self.dNdKsiTab = []
-        self.dNdEtaTab = []
-        self.NTab = []
-        self.fillTabs()
-        self.surfaces = [
+        self.dNdKsiTab: list[list[float]] = []
+        self.dNdEtaTab: list[list[float]] = []
+        self.NTab: list[list[float]] = []
+        self.surfaces: list[Surface] = [
             Surface(n), # down
             Surface(n), # right
             Surface(n), # up
             Surface(n)  # left
         ]
-        self.fillSurfaceTab()
-            
-    def initializeTabs(self):
-        for j in range(self.n*self.n):
-            self.dNdKsiTab.append([])
-            self.dNdEtaTab.append([])
-            self.NTab.append([])
-            for i in range (0, 4):
-                self.dNdKsiTab[j].append(0)
-                self.dNdEtaTab[j].append(0)
-                self.NTab[j].append(0)
+        self.fillTabs()
 
     def fillTabs(self):
-        '''
-        Calculates dN/dKsi and dN/dEta for N1, N2, N3, N4 in integration points. Result is stored in tables.
-        '''
-        self.initializeTabs()
-        for j in range(self.n*self.n):
-            ksi = self.points[j%self.n]
-            eta = self.points[j//self.n]
-            for i in range (0, 4):
-                self.dNdKsiTab[j][i] = dNdKsiFunTab[i](eta)
-                self.dNdEtaTab[j][i] = dNdEtaFunTab[i](ksi)
-                self.NTab[j][i] = NFunTab[i](ksi, eta)
+        def initialize():       
+            '''
+            Initializes empty tables.
+            '''
+            for i in range(self.n*self.n):
+                self.dNdKsiTab.append([])
+                self.dNdEtaTab.append([])
+                self.NTab.append([])
+                for _ in range (0, 4):
+                    self.dNdKsiTab[i].append(0)
+                    self.dNdEtaTab[i].append(0)
+                    self.NTab[i].append(0)
 
-    def fillSurfaceTab(self):
-        '''
-        Calculates integration points coords for surface calculations.
-        '''
-        for j in range(0, len(self.surfaces)):
-            ksiList = []
-            etaList = []
-            if j % 2 == 0:
-                ksiList = self.points
-                for i in range(0, self.n):
-                    etaList.append(j - 1)
-            else:
-                etaList = self.points
-                for i in range(0, self.n):
-                    ksiList.append(2 - j)
-            self.surfaces[j].fillN(ksiList, etaList)
+        def filldNdKsidNdEtaTabs():  
+            '''
+            Calculates dN/dKsi and dN/dEta for N1, N2, N3, N4 in integration points. Result is stored in tables.
+            '''
+            for j in range(self.n*self.n):
+                ksi = self.points[j%self.n]
+                eta = self.points[j//self.n]
+                for i in range (0, 4):
+                    self.dNdKsiTab[j][i] = dNdKsiFunTab[i](eta)
+                    self.dNdEtaTab[j][i] = dNdEtaFunTab[i](ksi)
+                    self.NTab[j][i] = NFunTab[i](ksi, eta)
+
+        def fillSurfaceTab():
+            '''
+            Calculates integration points coords for surface calculations.
+            '''
+            for i in range(0, len(self.surfaces)):
+                ksiList = []
+                etaList = []
+                if i % 2 == 0:
+                    ksiList = self.points
+                    for _ in range(0, self.n):
+                        etaList.append(i - 1)
+                else:
+                    etaList = self.points
+                    for _ in range(0, self.n):
+                        ksiList.append(2 - i)
+                self.surfaces[i].fillN(ksiList, etaList)
+
+        initialize()
+        filldNdKsidNdEtaTabs()
+        fillSurfaceTab()
 
 class Surface():
     '''
@@ -75,18 +81,18 @@ class Surface():
         self.n = n
         self.N = []
 
-    def initializeN(self):
-        for j in range (0, self.n):
-            self.N.append([])
-            for i in range (0, 4):
-                self.N[j].append(0)
-
     def fillN(self, ksiList: list[float], etaList: list[float]):
         '''
         Calculates N(ksi, eta) for N1, N2, N3, N4 and for each integration point on the surface
         Results are stored in the table
         '''
-        self.initializeN()
+        def initializeN():
+            for i in range (0, self.n):
+                self.N.append([])
+                for _ in range (0, 4):
+                    self.N[i].append(0)
+                    
+        initializeN()
         for j in range(0, len(ksiList)):
             for i in range(0, 4):
                 self.N[j][i] = NFunTab[i](ksiList[j], etaList[j])

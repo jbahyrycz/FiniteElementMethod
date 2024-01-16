@@ -8,14 +8,14 @@ class TemperatureSimulation:
         raise FiniteElementMethodException('TemperatureSimulation is an abstract class, you cannot create an instance of this class.')
     
     @staticmethod
-    def generateVtkFiles(inputFilename: str, grid: Grid, temperatures: list) -> None:
+    def _generateVtkFiles(inputFilename: str, grid: Grid, temperatures: list) -> None:
         '''
         Creates files for simulation in ParaView environment.
         '''
         numOfFiles = len(temperatures)
         elementNodesNumber = []
         for element in grid.elements:
-            elementNodesNumber.append(len(element.IDs))
+            elementNodesNumber.append(len(element.nodeIds))
 
         data = {}
         data['nodesNumber'] = grid.globalData.nodesNumber
@@ -41,7 +41,7 @@ class TemperatureSimulation:
         temperatures = []
         print(os.path.basename(inputFile))
         grid = Grid(inputFile)
-        LocalMatricesCalculation.calculate(2, grid)
+        LocalMatricesCalculation.calculate(5, grid)
         soe = SystemOfEquations(grid)
         tau0 = 0
         tauK = grid.globalData.simulationTime
@@ -53,4 +53,4 @@ class TemperatureSimulation:
             print(f'{(soe.dTau):<12}{round(min(result)[0], 3):<12}{round(max(result)[0], 3):<12}')
             tau0+=step
         print('')
-        TemperatureSimulation.generateVtkFiles(inputFile, grid, temperatures)
+        TemperatureSimulation._generateVtkFiles(inputFile, grid, temperatures)

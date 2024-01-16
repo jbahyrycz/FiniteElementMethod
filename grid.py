@@ -2,23 +2,21 @@ from common import *
 from universal_element import *
 import numpy as np
 
-#test
-
 class GlobalData:
     '''
     Stores general information like simulation time, conductivity, initial temperature, density etc.
     '''
     def __init__(self, globalDataDict: dict):
-        self.simulationTime = globalDataDict['SimulationTime']
-        self.simulationStepTime = globalDataDict['SimulationStepTime']
-        self.conductivity = globalDataDict['Conductivity']
-        self.alfa = globalDataDict['Alfa']
-        self.tot = globalDataDict['Tot']
-        self.initialTemp = globalDataDict['InitialTemp']
-        self.density = globalDataDict['Density']
-        self.specificHeat = globalDataDict['SpecificHeat']
-        self.nodesNumber = globalDataDict['Nodesnumber']
-        self.elementsNumber = globalDataDict['Elementsnumber']
+        self.simulationTime: float = globalDataDict['SimulationTime']
+        self.simulationStepTime: float = globalDataDict['SimulationStepTime']
+        self.conductivity: float = globalDataDict['Conductivity']
+        self.alfa: float = globalDataDict['Alfa']
+        self.tot: float = globalDataDict['Tot']
+        self.initialTemp: float = globalDataDict['InitialTemp']
+        self.density: float = globalDataDict['Density']
+        self.specificHeat: float = globalDataDict['SpecificHeat']
+        self.nodesNumber: int = globalDataDict['Nodesnumber']
+        self.elementsNumber: int = globalDataDict['Elementsnumber']
 
     def print(self) -> None:
         print(f'Simulation time: \t{self.simulationTime}')
@@ -42,10 +40,10 @@ class Node:
     BC:      border condition (0 or 1)
     '''
     def __init__(self, id: int, x: float, y: float):
-        self.id = id
-        self.x = x
-        self.y = y
-        self.BC = 0
+        self.id: int = id
+        self.x: float = x
+        self.y: float = y
+        self.BC: float = 0
 
     def print(self) -> None:
         print(f'Node {self.id}: \t({self.x}, {self.y})')
@@ -61,16 +59,16 @@ class Element:
     P:          P vector for the element (4X1)
     C:          C matrix for the element (4x4)
     '''
-    def __init__(self, ID: int, IDs: list[int]):
-        self.ID = ID
-        self.IDs = IDs
-        self.H = np.zeros((4, 4))
-        self.Hbc = np.zeros((4, 4))
-        self.P = np.zeros((4, 1))
-        self.C = np.zeros((4, 4))
+    def __init__(self, id: int, nodeIds: list[int]):
+        self.id: int = id
+        self.nodeIds: list[int] = nodeIds
+        self.H: np.ndarray = np.zeros((4, 4))
+        self.Hbc: np.ndarray = np.zeros((4, 4))
+        self.P: np.ndarray = np.zeros((4, 1))
+        self.C: np.ndarray = np.zeros((4, 4))
 
     def print(self) -> None:
-        print(f'Element {self.ID}: \t{self.IDs}')
+        print(f'Element {self.id}: \t{self.nodeIds}')
 
 class Grid:
     '''
@@ -85,23 +83,23 @@ class Grid:
         if inputFile is not None:
             try:
                 f = open(inputFile, 'r')
-                fileContent = f.readlines()
-                self.globalData = self.readGlobalData(fileContent)
-                self.nodes = self.readNodes(fileContent, self.globalData.nodesNumber)
-                self.elements = self.readElements(fileContent, self.globalData.nodesNumber, self.globalData.elementsNumber)
-                self.BC = self.readBC(fileContent, self.globalData.nodesNumber, self.globalData.elementsNumber)
-                self.addBcToNode(self.BC)
+                fileContent: str = f.readlines()
+                self.globalData: GlobalData = self._readGlobalData(fileContent)
+                self.nodes: list[Node] = self._readNodes(fileContent, self.globalData.nodesNumber)
+                self.elements: list[Element] = self._readElements(fileContent, self.globalData.nodesNumber, self.globalData.elementsNumber)
+                self.BC: list[Node] = self._readBC(fileContent, self.globalData.nodesNumber, self.globalData.elementsNumber)
+                self._addBcToNode(self.BC)
                 f.close()
             except Exception as e:
                 raise FiniteElementMethodException(f'Error while creating a Grid object. Check if your input file format is correct. Error:\n{e}')
         elif globalData is not None and elements is not None and nodes is not None:
-            self.globalData = globalData
-            self.nodes = nodes
-            self.elements = elements
+            self.globalData: GlobalData = globalData
+            self.nodes: list[Node] = nodes
+            self.elements: list[Element] = elements
         else:
             raise FiniteElementMethodException('Error while creating a Grid object. Not enough input data to create a grid.')
 
-    def readGlobalData(self, input: str) -> GlobalData:
+    def _readGlobalData(self, input: str) -> GlobalData:
         '''
         Reads global data from input file.
         '''
@@ -121,7 +119,7 @@ class Grid:
             globalDataDict[line[0]] = int(line[2])
         return GlobalData(globalDataDict)
 
-    def readNodes(self, input: str, nodesNumber: int) -> list[Node]:
+    def _readNodes(self, input: str, nodesNumber: int) -> list[Node]:
         '''
         Reads nodes from input file.
         '''
@@ -131,21 +129,21 @@ class Grid:
             nodeList.append(Node(int(line[0]), float(line[1]), float(line[2])))
         return nodeList
 
-    def readElements(self, input: str, nodesNumber: int, elementsNumber: int) -> list[Element]:
+    def _readElements(self, input: str, nodesNumber: int, elementsNumber: int) -> list[Element]:
         '''
         Reads elements data from input file.
         '''
         elements = []
-        nodeIDs = []
+        nodeIds = []
         for i in range (11 + nodesNumber + 1, 11 + nodesNumber + 1 + elementsNumber):
             line = input[i].split(', ')
             for i in range (1, len(line)):
-                nodeIDs.append(int(line[i]))
-            elements.append(Element(int(line[0]), nodeIDs))
-            nodeIDs = []
+                nodeIds.append(int(line[i]))
+            elements.append(Element(int(line[0]), nodeIds))
+            nodeIds = []
         return elements
     
-    def readBC(self, input: str, nodesNumber: int, elementsNumber: int) -> list[int]:
+    def _readBC(self, input: str, nodesNumber: int, elementsNumber: int) -> list[int]:
         '''
         Reads nodes with border condition from input file.
         '''
@@ -156,7 +154,7 @@ class Grid:
             nodeIDs.append(int(line[i]))
         return nodeIDs
     
-    def addBcToNode(self, BC: list[int]) -> None:
+    def _addBcToNode(self, BC: list[int]) -> None:
         '''
         Adds border condition to node.
         '''
