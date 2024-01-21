@@ -7,7 +7,7 @@ POINTS {{nodesNumber}} float
 {% for node in nodes %}{{node.x}} {{node.y}} 0.0
 {% endfor %}
 CELLS {{elementsNumber}} {{sumOfElementsData}}
-{% for i in range(elementsNumber) %}{{elementNodesNumber[i]}}{% for id in elements[i].IDs %} {{id - 1}}{% endfor %}
+{% for i in range(elementsNumber) %}{{elementNodesNumber[i]}}{% for id in elements[i].nodeIds %} {{id - 1}}{% endfor %}
 {% endfor %}
 CELL_TYPES {{elementsNumber}}
 {% for element in elements %}9
