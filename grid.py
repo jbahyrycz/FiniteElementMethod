@@ -79,27 +79,29 @@ class Grid:
     elements:       list of elements in the grid
     BC:             list of nodes with border condition
     '''
-    def __init__(self, inputFile: str = None, globalData: GlobalData = None, elements: list[Element] = None, nodes: list[Node] = None):
-        if inputFile is not None:
-            try:
-                f = open(inputFile, 'r')
-                fileContent: str = f.readlines()
-                self.globalData: GlobalData = self._readGlobalData(fileContent)
-                self.nodes: list[Node] = self._readNodes(fileContent, self.globalData.nodesNumber)
-                self.elements: list[Element] = self._readElements(fileContent, self.globalData.nodesNumber, self.globalData.elementsNumber)
-                self.BC: list[Node] = self._readBC(fileContent, self.globalData.nodesNumber, self.globalData.elementsNumber)
-                self._addBcToNode(self.BC)
-                f.close()
-            except Exception as e:
-                raise FiniteElementMethodException(f'Error while creating a Grid object. Check if your input file format is correct. Error:\n{e}')
-        elif globalData is not None and elements is not None and nodes is not None:
-            self.globalData: GlobalData = globalData
-            self.nodes: list[Node] = nodes
-            self.elements: list[Element] = elements
-        else:
-            raise FiniteElementMethodException('Error while creating a Grid object. Not enough input data to create a grid.')
+    def __init__(self, globalData: GlobalData = None, elements: list[Element] = None, nodes: list[Node] = None):
+        self.globalData: GlobalData = globalData
+        self.nodes: list[Node] = nodes
+        self.elements: list[Element] = elements
+        
+    @classmethod
+    def createFromFile(cls, inputFilePath: str):
+        try:
+            print(os.path.basename(inputFilePath))
+            f = open(inputFilePath, 'r')
+            fileContent: str = f.readlines()
+            globalData: GlobalData = cls._readGlobalData(fileContent)
+            nodes: list[Node] = cls._readNodes(fileContent, globalData.nodesNumber)
+            elements: list[Element] = cls._readElements(fileContent, globalData.nodesNumber, globalData.elementsNumber)
+            BC: list[Node] = cls._readBC(fileContent, globalData.nodesNumber, globalData.elementsNumber)
+            cls._addBcToNode(nodes, BC)
+            f.close()
+            return cls(globalData, elements, nodes)
+        except Exception as e:
+            raise FiniteElementMethodException(f'Error while creating a Grid object. Check if your input file format is correct. Error:\n{e}')
 
-    def _readGlobalData(self, input: str) -> GlobalData:
+    @staticmethod
+    def _readGlobalData(input: str) -> GlobalData:
         '''
         Reads global data from input file.
         '''
@@ -119,7 +121,8 @@ class Grid:
             globalDataDict[line[0]] = int(line[2])
         return GlobalData(globalDataDict)
 
-    def _readNodes(self, input: str, nodesNumber: int) -> list[Node]:
+    @staticmethod
+    def _readNodes(input: str, nodesNumber: int) -> list[Node]:
         '''
         Reads nodes from input file.
         '''
@@ -129,7 +132,8 @@ class Grid:
             nodeList.append(Node(int(line[0]), float(line[1]), float(line[2])))
         return nodeList
 
-    def _readElements(self, input: str, nodesNumber: int, elementsNumber: int) -> list[Element]:
+    @staticmethod
+    def _readElements(input: str, nodesNumber: int, elementsNumber: int) -> list[Element]:
         '''
         Reads elements data from input file.
         '''
@@ -143,7 +147,8 @@ class Grid:
             nodeIds = []
         return elements
     
-    def _readBC(self, input: str, nodesNumber: int, elementsNumber: int) -> list[int]:
+    @staticmethod
+    def _readBC(input: str, nodesNumber: int, elementsNumber: int) -> list[int]:
         '''
         Reads nodes with border condition from input file.
         '''
@@ -154,12 +159,13 @@ class Grid:
             nodeIDs.append(int(line[i]))
         return nodeIDs
     
-    def _addBcToNode(self, BC: list[int]) -> None:
+    @staticmethod
+    def _addBcToNode(nodes: list[Node], BC: list[int]) -> None:
         '''
         Adds border condition to node.
         '''
         for nodeID in BC:
-            self.nodes[nodeID - 1].BC = 1
+            nodes[nodeID - 1].BC = 1
     
     def print(self) -> None:
         self.globalData.print()
